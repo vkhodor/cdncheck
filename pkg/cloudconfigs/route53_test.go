@@ -1,4 +1,4 @@
-package cloudconfig
+package cloudconfigs
 
 import (
 	"github.com/aws/aws-sdk-go/aws"

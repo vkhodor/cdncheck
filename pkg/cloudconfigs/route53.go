@@ -1,52 +1,56 @@
-package cloudconfig
+package cloudconfigs
 
 import (
-	"fmt"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/sirupsen/logrus"
 )
-
-//	"github.com/aws/aws-sdk-go/aws/session"
-//	"github.com/aws/aws-sdk-go/service/athena"
-//	"github.com/dustin/go-humanize"
 
 type CloudRoute53 struct {
 	client     *route53.Route53
 	zoneId     string
 	recordName string
+	logger     *logrus.Logger
 }
 
-func NewCloudRoute53(zoneId string, recordName string) *CloudRoute53 {
+func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *CloudRoute53 {
 	mySession := session.Must(session.NewSession())
 	svc := route53.New(mySession)
-	ret := CloudRoute53{client: svc, zoneId: zoneId, recordName: recordName}
+	ret := CloudRoute53{client: svc, zoneId: zoneId, recordName: recordName, logger: logger}
 	return &ret
 }
 
-func (c *CloudRoute53) Status() string {
+func (c *CloudRoute53) State() (string, error) {
 	input := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: aws.String(c.zoneId),
 	}
 
 	output, err := c.client.ListResourceRecordSets(input)
 	if err != nil {
-		fmt.Println(err)
-		return "error"
+		c.logger.Debug(err)
+		return "error", err
 	}
 	return getStatus(output.ResourceRecordSets, c.recordName)
 }
 
-func (c *CloudRoute53) Fallback() bool {
+func (c *CloudRoute53) Fallback() (bool, error) {
 	result, err := c.makeChanges("DELETE")
-	fmt.Println(result, err)
-	return true
+	if err != nil {
+		return false, err
+	}
+	c.logger.Debug("Fallback(): ", result, err)
+	return true, nil
 }
 
-func (c *CloudRoute53) Normal() bool {
+func (c *CloudRoute53) Normal() (bool, error) {
 	result, err := c.makeChanges("CREATE")
-	fmt.Println(result, err)
-	return true
+	if err != nil {
+		return false, err
+	}
+	c.logger.Debug("Normal(): ", result, err)
+	return true, nil
 }
 
 func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
@@ -82,10 +86,6 @@ func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
 		batch = append(batch, CloudFrontRecords)
 	}
 
-	for i, r := range batch {
-		fmt.Println(i, r)
-	}
-
 	var input = &route53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: batch,
@@ -100,11 +100,14 @@ func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
 	return true, nil
 }
 
-func getStatus(records []*route53.ResourceRecordSet, recordName string) string {
+func getStatus(records []*route53.ResourceRecordSet, recordName string) (string, error) {
+	if len(records) == 0 {
+		return "error", errors.New("len of found records is null")
+	}
 	for _, record := range records {
 		if *record.Name == recordName && *record.Type == "CNAME" {
-			return "fallback"
+			return "fallback", nil
 		}
 	}
-	return "normal"
+	return "normal", nil
 }

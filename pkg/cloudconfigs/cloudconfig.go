@@ -1,7 +1,7 @@
-package cloudconfig
+package cloudconfigs
 
 type CloudConfig interface {
-	Status() string
+	State() string
 	Fallback() bool
 	Normal() bool
 }
