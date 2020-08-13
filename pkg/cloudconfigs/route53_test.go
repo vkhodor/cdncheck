@@ -14,7 +14,10 @@ func TestGetStatus(t *testing.T) {
 		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
 	}
 
-	result := getStatus(records, "content.cdn.personaly.bid")
+	result, err := getStatus(records, "content.cdn.personaly.bid")
+	if err != nil {
+		t.Error()
+	}
 	if result != "fallback" {
 		t.Error()
 	}
@@ -25,7 +28,10 @@ func TestGetStatus(t *testing.T) {
 		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
 	}
 
-	result = getStatus(records, "content.cdn.personaly.bid")
+	result, err = getStatus(records, "content.cdn.personaly.bid")
+	if err != nil {
+		t.Error()
+	}
 	if result != "normal" {
 		t.Error()
 	}
