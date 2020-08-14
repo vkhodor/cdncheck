@@ -7,6 +7,12 @@ VERSION=`git describe --tags`
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 LDFLAGS=-ldflags="-X main.version=$(VERSION)/$(BUILD_TIME)"
 APP="cdncheck"
+PROJECT="github.com/vkhodor/$(APP)"
+
+GO_LIST=$(shell go list ${PROJECT}/...)
+
+debug:
+	echo $(GO_LIST)
 
 lint:
 	@echo "+ $@"
@@ -27,6 +33,11 @@ tidy:
 vendor:
 	@echo "+ $@"
 	@go mod vendor
+
+.PHONY: test
+test:
+	@echo "+ $@"
+	@go test -v -cover -race $(GO_LIST)
 
 # Compile application
 build: tidy vendor fmt lint linux-amd64 windows-amd64
