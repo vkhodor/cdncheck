@@ -17,6 +17,5 @@ func (s *Server) TryToFallback() {
 		ok, err := check.Check()
 		s.Logger.Debug("TryToFallback: ", ok)
 		s.Logger.Debug("TryToFallback: ", err)
-
 	}
 }
