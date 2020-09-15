@@ -11,7 +11,7 @@ type CLIFlags struct {
 
 func GetArgs() CLIFlags {
 	flagSetNormal := flag.Bool("set.normal", false, "set CDN in normal state")
-	flagSetFallback := flag.Bool("set.fallback", false, "set CDN to falback state without any checks")
+	flagSetFallback := flag.Bool("set.fallback", false, "set CDN to fallback state without any checks")
 	flagGetState := flag.Bool("get.state", false, "get CDN current state and exit")
 	flagDebug := flag.Bool("debug", false, "debug mode")
 

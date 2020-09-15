@@ -32,7 +32,7 @@ func (c *CloudRoute53) State() (string, error) {
 		c.logger.Debug(err)
 		return "error", err
 	}
-	return getStatus(output.ResourceRecordSets, c.recordName)
+	return getState(output.ResourceRecordSets, c.recordName)
 }
 
 func (c *CloudRoute53) Fallback() (bool, error) {
@@ -100,7 +100,7 @@ func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
 	return true, nil
 }
 
-func getStatus(records []*route53.ResourceRecordSet, recordName string) (string, error) {
+func getState(records []*route53.ResourceRecordSet, recordName string) (string, error) {
 	if len(records) == 0 {
 		return "error", errors.New("len of found records is null")
 	}

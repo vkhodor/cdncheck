@@ -14,8 +14,6 @@
 --set.fallback
 --get.state
 --get.config
---run (*default)
---help
 
 cfg
 ----
@@ -40,3 +38,15 @@ httpCheck:
   path: "checks/status.txt"
   code: "200"
 
+fallback:
+ - action1
+ - action2
+ - action3
+ ...
+
+normal:
+ - action1
+ - action2
+ - action3
+ ...
+ 
