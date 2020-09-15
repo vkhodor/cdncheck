@@ -12,10 +12,13 @@ type Server struct {
 	Logger       *logrus.Logger
 }
 
-func (s *Server) TryToFallback() {
+func (s *Server) Check() (bool, error) {
 	for _, check := range s.Checks {
 		ok, err := check.Check()
-		s.Logger.Debug("TryToFallback: ", ok)
-		s.Logger.Debug("TryToFallback: ", err)
+		s.Logger.Debug("Check: ", ok, err)
+		if !ok {
+			return ok, err
+		}
 	}
+	return true, nil
 }
