@@ -28,11 +28,11 @@ func main() {
 		"jp-01.cdn.personaly.bid",
 	}
 
-	zoneId := "Z2WXU28CDS7KHT"
-	recordName := "content.algorithmic.bid."
+	//zoneId := "Z2WXU28CDS7KHT"
+	//recordName := "content.algorithmic.bid."
 
-	//zoneId := "Z075237433HUE55HSW0Z7"
-	//recordName := "content.cdn.personaly.bid."
+	zoneId := "Z075237433HUE55HSW0Z7"
+	recordName := "content.cdn.personaly.bid."
 
 	cliFlags := cli.GetArgs()
 	level := logrus.InfoLevel
