@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	logrus "github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/checks"
 	"github.com/vkhodor/cdncheck/pkg/cli"
+	"github.com/vkhodor/cdncheck/pkg/senders"
 	"github.com/vkhodor/cdncheck/pkg/servers"
 	"os"
 
@@ -21,6 +23,12 @@ func NewLogger(level logrus.Level) *logrus.Logger {
 }
 
 func main() {
+	sender := senders.NewSlack(
+		"https://hooks.slack.com/services/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",
+		"CDNCheck",
+		"persona-devops",
+	)
+
 	hosts := []string{
 		"us-01.cdn.personaly.bid",
 		"us-02.cdn.personaly.bid",
@@ -85,6 +93,7 @@ func main() {
 		logger.Info("Current CDN state is already fallback. Do nothing")
 		os.Exit(0)
 	}
+
 	for _, host := range hosts {
 		logger.Info("***** ", host, " *****")
 		sslCheck := &checks.SSLCheck{
@@ -129,11 +138,15 @@ func main() {
 		ok, err := server.Check()
 		logger.Info("Check result: ", ok, err)
 		if !ok {
+			_ = sender.Send("CDN check returned error. Going to Fallback...")
 			ok, err = r53client.Fallback()
 			if !ok {
 				logger.Fatalln("Can't change CDN state to fallback: ", err)
+				_ = sender.Send(fmt.Sprintf("Can't change CDN state to fallback: %v", err))
 			}
 			logger.Info("CDN state changed to fallback")
+			_ = sender.Send("CDN state changed to fallback!")
+			break
 		}
 	}
 }
