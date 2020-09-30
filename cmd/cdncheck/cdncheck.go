@@ -8,12 +8,11 @@ import (
 	"github.com/vkhodor/cdncheck/pkg/senders"
 	"github.com/vkhodor/cdncheck/pkg/servers"
 	"os"
-
 	//	"github.com/vkhodor/cdncheck/pkg/checks"
 	"github.com/vkhodor/cdncheck/pkg/cloudconfigs"
 )
 
-var version = "0.0.1"
+var version = "0.0.2"
 
 func NewLogger(level logrus.Level) *logrus.Logger {
 	logger := logrus.New()
@@ -23,43 +22,42 @@ func NewLogger(level logrus.Level) *logrus.Logger {
 }
 
 func main() {
-	sender := senders.NewSlack(
-		"https://hooks.slack.com/services/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",
-		"CDNCheck",
-		"persona-devops",
-	)
-
-	hosts := []string{
-		"us-01.cdn.personaly.bid",
-		"us-02.cdn.personaly.bid",
-		"eu-01.cdn.personaly.bid",
-		"jp-01.cdn.personaly.bid",
+	cliFlags := cli.GetArgs()
+	fmt.Println(cliFlags.ConfigFile)
+	conf, err := cli.GetConfig(&cliFlags)
+	if err != nil {
+		panic(err)
 	}
 
-	//zoneId := "Z2WXU28CDS7KHT"
-	//recordName := "content.algorithmic.bid."
+	sender := senders.NewSlack(
+		conf.Slack.URL,
+		conf.Slack.Username,
+		conf.Slack.Channel,
+	)
 
-	zoneId := "Z075237433HUE55HSW0Z7"
-	recordName := "content.cdn.personaly.bid."
-
-	cliFlags := cli.GetArgs()
 	level := logrus.InfoLevel
-	if cliFlags.Debug {
+	if conf.Debug {
 		level = logrus.DebugLevel
 	}
 	logger := NewLogger(level)
 
-	logger.Info("zoneId: " + zoneId)
-	logger.Info("recordName: " + recordName)
+	logger.Info("zoneId: " + conf.Route53.ZoneId)
+	logger.Info("recordName: " + conf.Route53.RecordName)
 
-	var r53client cloudconfigs.CloudConfig = cloudconfigs.NewCloudRoute53(zoneId, recordName, logger)
-	currentState, err := r53client.State()
+	var r53client cloudconfigs.CloudConfig = cloudconfigs.NewCloudRoute53(
+		conf.Route53.ZoneId,
+		conf.Route53.RecordName,
+		logger,
+	)
+	var currentState string
+	currentState, err = r53client.State()
 	if err != nil {
 		logger.Error(err)
 		os.Exit(1)
 	}
 	logger.Info("Current CDN state: ", currentState)
 	if cliFlags.GetState {
+		fmt.Println(currentState)
 		os.Exit(0)
 	}
 
@@ -94,7 +92,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	for _, host := range hosts {
+	for _, host := range conf.CDNHosts {
 		logger.Info("***** ", host, " *****")
 		sslCheck := &checks.SSLCheck{
 			CertDomains: []string{

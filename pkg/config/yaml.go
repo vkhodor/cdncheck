@@ -33,6 +33,16 @@ type YAMLConfig struct {
 		TTL         int      `yaml:"ttl"`
 		CountryCode string   `yaml:"countryCode"`
 	}
+
+	Checks []struct {
+		Name    string   `yaml:"name"`
+		Domains []string `yaml:"domains"`
+		Schema  string   `yaml:"schema"`
+		Host    string   `yaml:"host"`
+		Port    int      `yaml:"port"`
+		Code    int      `yaml:"code"`
+		Path    string   `yaml:"path"`
+	}
 }
 
 func NewYAMLConfig(yamlData []byte) (*YAMLConfig, error) {
