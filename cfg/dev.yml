@@ -1,0 +1,61 @@
+---
+debug: True
+
+slack:
+  url: 'https://hooks.slack.com/services/111'
+  username: 'cdn'
+  channel: 'some-channel'
+
+route53:
+  zoneId: '123'
+  recordName: 'qwerty.com.'
+
+cdnHosts:
+  - 'u-01.cdn.qwery.com'
+  - 'u-02.cdn.qwerty.com'
+  - 'e-01.cdn.qwerty.com'
+  - 'j-01.cdn.qwerty.com'
+
+normal:
+  - identifier: 'default-content'
+    values:
+      - '1.2.3.4'
+      - '1.1.1.1'
+    type: 'A'
+    ttl: 60
+    countryCode: '*'
+
+  - identifier: 'u-content'
+    values:
+      - '127.0.0.1'
+      - '127.0.0.2'
+    type: 'A'
+    ttl: 60
+    countryCode: 'NA'
+
+  - identifier: 'j-content'
+    values:
+      - '8.8.8.8'
+    type: 'A'
+    ttl: 60
+    countryCode: 'JP'
+
+  - identifier: 'a-content'
+    values:
+      - '4.4.4.4'
+    type: 'A'
+    ttl: 60
+    countryCode: 'AS'
+
+  - identifier: 'e-content'
+    values:
+      - '5.5.5.5'
+    type: 'A'
+    ttl: 60
+    countryCode: 'EU'
+
+fallback:
+  - values:
+      - 'xxxx.cloudfront.net'
+    type: 'CNAME'
+    ttl: 60
