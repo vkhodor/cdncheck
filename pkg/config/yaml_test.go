@@ -7,7 +7,7 @@ import (
 func TestNewYAMLConfig(t *testing.T) {
 	yaml := `
 ---
-debug: True
+debug: on
 
 slack:
   url: 'https://hooks.slack.com/services/111'
