@@ -1,6 +1,11 @@
 package config
 
-import "gopkg.in/yaml.v2"
+import (
+	"errors"
+	"github.com/sirupsen/logrus"
+	"github.com/vkhodor/cdncheck/pkg/checks"
+	"gopkg.in/yaml.v2"
+)
 
 type YAMLConfig struct {
 	Debug bool `yaml:"debug"`
@@ -43,6 +48,35 @@ type YAMLConfig struct {
 		Code    int      `yaml:"code"`
 		Path    string   `yaml:"path"`
 	}
+}
+
+func (y *YAMLConfig) GetChecks(logger *logrus.Logger) ([]checks.Check, error) {
+	var chks []checks.Check
+	for _, check := range y.Checks {
+		switch name := check.Name; name {
+		case "ssl":
+			chks = append(chks,
+				&checks.SSLCheck{
+					Port:        check.Port,
+					CertDomains: check.Domains,
+					Logger:      logger,
+				},
+			)
+		case "url":
+			chks = append(chks,
+				&checks.URLCheck{
+					Port:      check.Port,
+					Schema:    check.Schema,
+					Path:      check.Path,
+					RightCode: check.Code,
+					Logger:    logger,
+				},
+			)
+		default:
+			return nil, errors.New("unknown check name")
+		}
+	}
+	return chks, nil
 }
 
 func NewYAMLConfig(yamlData []byte) (*YAMLConfig, error) {

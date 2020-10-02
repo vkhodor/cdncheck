@@ -1,50 +1,16 @@
-3. сделать отправку сообщения в slack/telegram - если происходит переключение должно отправляться сообщение в телегу, слэк, почту...
-4. сделать конфигурацию
-    интерфейс
-    реализацию
 5. добавить мультипотоковость (чтобы сервера тестировались все одновременно)    
-----------------------------------    
---set.normal
---set.fallback
---get.state
-----------------------------------
+6.
 cfg
-----
-debug: true/false
-
-slack:
-  url:
-  username:
-  channel:
-
-route53:
- zoneId: "sdsdfsdf"
- recordeName: "content.cdn.personaly.bid"
-
-cdnHosts:
- - us-01.cdn.personaly.bid
- - us-02.cdn.personaly.bid
- - eu-01.cdn.personaly.bid
- - jp-01.cdn.personaly.bid
- 
-sslCheck:
-  domains:
-    - content.cdn.personaly.bid
-    - *.cdn.personaly.bid
-
-httpCheck:
-  path: "checks/status.txt"
-  code: "200"
-
+---- 
 fallback:
- - action1
- - action2
- - action3
+  - action1
+  - action2
+  - action3
  ...
 
 normal:
- - action1
- - action2
- - action3
+  - action1
+  - action2
+  - action3
  ...
  

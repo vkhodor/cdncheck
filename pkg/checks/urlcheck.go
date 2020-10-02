@@ -10,16 +10,15 @@ type URLCheck struct {
 	Path      string
 	RightCode int
 	Logger    *logrus.Logger
-	Host      string
 	Port      int
 	Schema    string
 }
 
-func (h *URLCheck) Check() (bool, error) {
+func (h *URLCheck) Check(host string) (bool, error) {
 	if h.Schema == "" {
 		h.Schema = "http"
 	}
-	url := h.Schema + "://" + h.Host + ":" + strconv.Itoa(h.Port) + "/" + h.Path
+	url := h.Schema + "://" + host + ":" + strconv.Itoa(h.Port) + "/" + h.Path
 	h.Logger.Debug("URLCheck: url = ", url)
 	resp, err := http.Get(url)
 	if err != nil {

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	logrus "github.com/sirupsen/logrus"
-	"github.com/vkhodor/cdncheck/pkg/checks"
 	"github.com/vkhodor/cdncheck/pkg/cli"
 	"github.com/vkhodor/cdncheck/pkg/senders"
 	"github.com/vkhodor/cdncheck/pkg/servers"
@@ -92,45 +91,18 @@ func main() {
 		os.Exit(0)
 	}
 
+	checksList, err := conf.GetChecks(logger)
+	if err != nil {
+		panic(err)
+	}
+
 	for _, host := range conf.CDNHosts {
 		logger.Info("***** ", host, " *****")
-		sslCheck := &checks.SSLCheck{
-			CertDomains: []string{
-				"content.cdn.personaly.bid",
-				"*.cdn.personaly.bid",
-				host,
-			},
-			Logger: logger,
-			Host:   host,
-			Port:   443,
-		}
-
-		httpCheck := &checks.URLCheck{
-			Path:      "checks/status.txt",
-			RightCode: 200,
-			Logger:    logger,
-			Host:      host,
-			Port:      80,
-			Schema:    "http",
-		}
-
-		httpsCheck := &checks.URLCheck{
-			Path:      "checks/status.txt",
-			RightCode: 200,
-			Logger:    logger,
-			Host:      host,
-			Port:      443,
-			Schema:    "https",
-		}
-
 		server := servers.Server{
 			Logger:       logger,
 			CloudConfigs: []cloudconfigs.CloudConfig{r53client},
-			Checks: []checks.Check{
-				sslCheck,
-				httpCheck,
-				httpsCheck,
-			},
+			Checks:       checksList,
+			Host:         host,
 		}
 
 		ok, err := server.Check()

@@ -12,13 +12,12 @@ import (
 type SSLCheck struct {
 	Logger      *logrus.Logger
 	CertDomains []string
-	Host        string
 	Port        int
 }
 
-func (h *SSLCheck) Check() (bool, error) {
+func (h *SSLCheck) Check(host string) (bool, error) {
 	//	now := time.Now()
-	crt, err := h.getCert()
+	crt, err := h.getCert(host)
 	if err != nil {
 		return false, err
 	}
@@ -55,12 +54,12 @@ func (h *SSLCheck) expirationCheck(crt *x509.Certificate, now time.Time) bool {
 	return true
 }
 
-func (h *SSLCheck) getCert() (*x509.Certificate, error) {
+func (h *SSLCheck) getCert(host string) (*x509.Certificate, error) {
 
 	strPort := strconv.Itoa(h.Port)
-	h.Logger.Debug("Get SSL Cert from ", h.Host+":"+strPort)
+	h.Logger.Debug("Get SSL Cert from ", host+":"+strPort)
 
-	conn, err := tls.Dial("tcp", h.Host+":"+strPort, &tls.Config{InsecureSkipVerify: true})
+	conn, err := tls.Dial("tcp", host+":"+strPort, &tls.Config{InsecureSkipVerify: true})
 
 	if err != nil {
 		h.Logger.Debug(err)
