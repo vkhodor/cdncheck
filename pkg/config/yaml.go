@@ -79,6 +79,36 @@ func (y *YAMLConfig) GetChecks(logger *logrus.Logger) ([]checks.Check, error) {
 	return chks, nil
 }
 
+func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
+	var records []DNSRecord
+	for _, r := range y.Fallback {
+		records = append(records, DNSRecord{
+			Values:      &r.Values,
+			Type:        &r.Type,
+			TTL:         &r.TTL,
+			CountryCode: &r.CountryCode,
+			Identifier:  &r.Identifier,
+		},
+		)
+	}
+	return records, nil
+}
+
+func (y *YAMLConfig) GetNormalRecords() ([]DNSRecord, error) {
+	var records []DNSRecord
+	for _, r := range y.Normal {
+		records = append(records, DNSRecord{
+			Values:      &r.Values,
+			Type:        &r.Type,
+			TTL:         &r.TTL,
+			CountryCode: &r.CountryCode,
+			Identifier:  &r.Identifier,
+		},
+		)
+	}
+	return records, nil
+}
+
 func NewYAMLConfig(yamlData []byte) (*YAMLConfig, error) {
 	var config YAMLConfig
 	err := yaml.Unmarshal(yamlData, &config)

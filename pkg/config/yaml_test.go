@@ -93,22 +93,6 @@ checks:
 `
 }
 
-/*
-func TestYAMLGetChecks(t *testing.T) {
-	yaml := GetYAML()
-	cfg, _ := NewYAMLConfig([]byte(yaml))
-	chks, err := cfg.GetChecks(&logrus.Logger{})
-	if err != nil {
-		t.Error()
-	}
-	if len(chks) != 3 {
-		t.Error()
-	}
-	for _, c := range chks {
-		if reflect.Type(c) == "SSL"
-	}
-}
-*/
 func TestNewYAMLConfig(t *testing.T) {
 	yaml := GetYAML()
 	cfg, _ := NewYAMLConfig([]byte(yaml))

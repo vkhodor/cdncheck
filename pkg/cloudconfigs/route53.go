@@ -6,13 +6,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/sirupsen/logrus"
+	"github.com/vkhodor/cdncheck/pkg/config"
 )
 
 type CloudRoute53 struct {
-	client     *route53.Route53
-	zoneId     string
-	recordName string
-	logger     *logrus.Logger
+	client          *route53.Route53
+	zoneId          string
+	recordName      string
+	logger          *logrus.Logger
+	normalRecords   []*route53.Change
+	fallbackRecords []*route53.Change
 }
 
 func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *CloudRoute53 {
@@ -98,6 +101,48 @@ func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (c *CloudRoute53) loadRecordsByType(config config.Config, []config.DNSRecord, []*route53.Change) {
+
+}
+
+func (c *CloudRoute53) LoadRecords(config config.Config) error {
+	normalRecords, err := config.GetNormalRecords()
+	if err != nil {
+		return err
+	}
+
+	fallbackRecords, err := config.GetFallbackRecords()
+	if err != nil {
+		return err
+	}
+
+	for _, n := range normalRecords {
+		var values []*route53.ResourceRecord
+		for _,v := range *n.Values{
+			values = append(values, &route53.ResourceRecord{
+				Value: aws.String(v),
+			})
+
+		}
+
+		c.normalRecords = append(c.normalRecords, &route53.Change{
+			ResourceRecordSet: &route53.ResourceRecordSet{
+				ResourceRecords: values,
+				TTL:  aws.Int64(int64(*n.TTL)),
+				Type: n.Type,
+				GeoLocation: &route53.GeoLocation{
+					CountryCode: n.CountryCode,
+				},
+				SetIdentifier: n.Identifier,
+			},
+		})
+
+	}
+
+
+	return nil
 }
 
 func getState(records []*route53.ResourceRecordSet, recordName string) (string, error) {
