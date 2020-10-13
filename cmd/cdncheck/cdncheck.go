@@ -76,6 +76,7 @@ func main() {
 			logger.Fatalln("Can't fallback cloud configuration: ", err)
 		}
 		logger.Info("CDN state changed to fallback")
+		sender.Send("CDN state changed to fallback.")
 		os.Exit(0)
 	}
 
@@ -89,6 +90,7 @@ func main() {
 			logger.Fatalln("Can't back cloud configuration to normal state: ", err)
 		}
 		logger.Info("CDN state changed to normal")
+		sender.Send("CDN state changed to normal.")
 		os.Exit(0)
 	}
 
