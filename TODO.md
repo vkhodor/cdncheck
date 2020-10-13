@@ -1,16 +1,5 @@
+1. врет getState. на проде всегда показывает normal
+2. добавить в деплой nginx секцию с ssl для домена хоста.
+3. добавить SSLBeforeDate check
 5. добавить мультипотоковость (чтобы сервера тестировались все одновременно)    
 6.
-cfg
----- 
-fallback:
-  - action1
-  - action2
-  - action3
- ...
-
-normal:
-  - action1
-  - action2
-  - action3
- ...
- 
