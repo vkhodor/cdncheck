@@ -49,7 +49,7 @@ func main() {
 		logger,
 	)
 
-	err = r53client.LoadRecords(conf)
+	err = r53client.LoadChanges(conf)
 	if err != nil {
 		panic(err)
 	}

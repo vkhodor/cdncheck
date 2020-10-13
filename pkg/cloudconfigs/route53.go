@@ -14,8 +14,8 @@ type CloudRoute53 struct {
 	zoneId          string
 	recordName      string
 	logger          *logrus.Logger
-	normalRecords   []*route53.Change
-	fallbackRecords []*route53.Change
+	normalChanges   []*route53.Change
+	fallbackChanges []*route53.Change
 }
 
 func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *CloudRoute53 {
@@ -131,7 +131,7 @@ func recordsToChanges(records []config.DNSRecord) ([]*route53.Change, error) {
 	return changes, nil
 }
 
-func (c *CloudRoute53) LoadRecords(config config.Config) error {
+func (c *CloudRoute53) LoadChanges(config config.Config) error {
 	normalRecords, err := config.GetNormalRecords()
 	if err != nil {
 		return err
@@ -142,12 +142,12 @@ func (c *CloudRoute53) LoadRecords(config config.Config) error {
 		return err
 	}
 
-	c.normalRecords, err = recordsToChanges(normalRecords)
+	c.normalChanges, err = recordsToChanges(normalRecords)
 	if err != nil {
 		return err
 	}
 
-	c.fallbackRecords, err = recordsToChanges(fallbackRecords)
+	c.fallbackChanges, err = recordsToChanges(fallbackRecords)
 
 	return nil
 }

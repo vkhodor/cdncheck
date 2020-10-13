@@ -6,5 +6,5 @@ type CloudConfig interface {
 	State() (string, error)
 	Fallback() (bool, error)
 	Normal() (bool, error)
-	LoadRecords(config config.Config) error
+	LoadChanges(config config.Config) error
 }
