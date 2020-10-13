@@ -41,7 +41,7 @@ normal:
       - '127.0.0.2'
     type: 'A'
     ttl: 60
-    countryCode: 'NA'
+    continentCode: 'NA'
 
   - name: content
     identifier: 'j-content'
@@ -57,7 +57,7 @@ normal:
       - '4.4.4.4'
     type: 'A'
     ttl: 60
-    countryCode: 'AS'
+    continentCode: 'AS'
 
   - name: content
     identifier: 'e-content'
@@ -65,7 +65,7 @@ normal:
       - '5.5.5.5'
     type: 'A'
     ttl: 60
-    countryCode: 'EU'
+    continentCode: 'EU'
 
 fallback:
   - name: content
@@ -140,20 +140,20 @@ func TestNewYAMLConfig(t *testing.T) {
 	}
 
 	for _, record := range cfg.Normal {
-		if record.Identifier == "u-content" {
-			if record.Name != "content" {
+		if *record.Identifier == "u-content" {
+			if *record.Name != "content" {
 				t.Error()
 			}
-			if len(record.Values) != 2 {
+			if len(*record.Values) != 2 {
 				t.Error()
 			}
-			if record.TTL != 60 {
+			if *record.TTL != 60 {
 				t.Error()
 			}
-			if record.Type != "A" {
+			if *record.Type != "A" {
 				t.Error()
 			}
-			if record.CountryCode != "NA" {
+			if *record.ContinentCode != "NA" {
 				t.Error()
 			}
 		}
@@ -162,10 +162,11 @@ func TestNewYAMLConfig(t *testing.T) {
 	if len(cfg.Fallback) != 1 {
 		t.Error()
 	}
-	if cfg.Fallback[0].Name != "content" {
+	if *cfg.Fallback[0].Name != "content" {
 		t.Error()
 	}
-	if cfg.Fallback[0].Values[0] != "xxxx.cloudfront.net" {
+	values := *cfg.Fallback[0].Values
+	if values[0] != "xxxx.cloudfront.net" {
 		t.Error()
 	}
 

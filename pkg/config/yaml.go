@@ -24,21 +24,23 @@ type YAMLConfig struct {
 	CDNHosts []string `yaml:"cdnHosts"`
 
 	Normal []struct {
-		Name        string   `yaml:"name"`
-		Identifier  string   `yaml:"identifier"`
-		Values      []string `yaml:"values"`
-		Type        string   `yaml:"type"`
-		TTL         int      `yaml:"ttl"`
-		CountryCode string   `yaml:"countryCode"`
+		Name          *string   `yaml:"name"`
+		Identifier    *string   `yaml:"identifier"`
+		Values        *[]string `yaml:"values"`
+		Type          *string   `yaml:"type"`
+		TTL           *int      `yaml:"ttl"`
+		CountryCode   *string   `yaml:"countryCode"`
+		ContinentCode *string   `yaml:"continentCode"`
 	}
 
 	Fallback []struct {
-		Name        string   `yaml:"name"`
-		Identifier  string   `yaml:"identifier"`
-		Values      []string `yaml:"values"`
-		Type        string   `yaml:"type"`
-		TTL         int      `yaml:"ttl"`
-		CountryCode string   `yaml:"countryCode"`
+		Name          *string   `yaml:"name"`
+		Identifier    *string   `yaml:"identifier"`
+		Values        *[]string `yaml:"values"`
+		Type          *string   `yaml:"type"`
+		TTL           *int      `yaml:"ttl"`
+		CountryCode   *string   `yaml:"countryCode"`
+		ContinentCode *string   `yaml:"continentCode"`
 	}
 
 	Checks []struct {
@@ -85,12 +87,13 @@ func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Fallback {
 		records = append(records, DNSRecord{
-			Name:        &r.Name,
-			Values:      &r.Values,
-			Type:        &r.Type,
-			TTL:         &r.TTL,
-			CountryCode: &r.CountryCode,
-			Identifier:  &r.Identifier,
+			Name:          r.Name,
+			Values:        r.Values,
+			Type:          r.Type,
+			TTL:           r.TTL,
+			CountryCode:   r.CountryCode,
+			ContinentCode: r.ContinentCode,
+			Identifier:    r.Identifier,
 		},
 		)
 	}
@@ -101,14 +104,14 @@ func (y *YAMLConfig) GetNormalRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Normal {
 		records = append(records, DNSRecord{
-			Name:        &r.Name,
-			Values:      &r.Values,
-			Type:        &r.Type,
-			TTL:         &r.TTL,
-			CountryCode: &r.CountryCode,
-			Identifier:  &r.Identifier,
-		},
-		)
+			Name:          r.Name,
+			Values:        r.Values,
+			Type:          r.Type,
+			TTL:           r.TTL,
+			CountryCode:   r.CountryCode,
+			ContinentCode: r.ContinentCode,
+			Identifier:    r.Identifier,
+		})
 	}
 	return records, nil
 }

@@ -2,6 +2,7 @@ package cloudconfigs
 
 import (
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -38,57 +39,51 @@ func (c *CloudRoute53) State() (string, error) {
 	return getState(output.ResourceRecordSets, c.recordName)
 }
 
-func (c *CloudRoute53) Fallback() (bool, error) {
-	result, err := c.makeChanges("DELETE")
-	if err != nil {
-		return false, err
+func (c *CloudRoute53) setNormalAction(action string) {
+	for _, r := range c.normalChanges {
+		r.Action = aws.String(action)
 	}
-	c.logger.Debug("Fallback(): ", result, err)
-	return true, nil
+}
+
+func (c *CloudRoute53) setFallbackAction(action string) {
+	for _, r := range c.fallbackChanges {
+		r.Action = aws.String(action)
+	}
 }
 
 func (c *CloudRoute53) Normal() (bool, error) {
-	result, err := c.makeChanges("CREATE")
-	if err != nil {
-		return false, err
+	c.setFallbackAction("DELETE")
+	c.setNormalAction("CREATE")
+
+	var batch []*route53.Change
+	batch = c.fallbackChanges
+	for _, r := range c.normalChanges {
+		batch = append(batch, r)
 	}
-	c.logger.Debug("Normal(): ", result, err)
-	return true, nil
+	return c.makeChanges(batch)
 }
 
-func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
-	action := aws.String(changesType)
-	name := aws.String(c.recordName)
+func (c *CloudRoute53) Fallback() (bool, error) {
+	for _, r := range c.normalChanges {
+		fmt.Println(r.String())
+	}
+	c.setNormalAction("DELETE")
+	c.setFallbackAction("CREATE")
 
-	NorthAmericaRecords.Action = action
-	AsiaRecords.Action = action
-	JapanRecords.Action = action
-	EuropeRecords.Action = action
-	DefaultRecords.Action = action
-	CloudFrontRecords.Action = aws.String("CREATE")
-
-	NorthAmericaRecords.ResourceRecordSet.Name = name
-	AsiaRecords.ResourceRecordSet.Name = name
-	JapanRecords.ResourceRecordSet.Name = name
-	EuropeRecords.ResourceRecordSet.Name = name
-	DefaultRecords.ResourceRecordSet.Name = name
-	CloudFrontRecords.ResourceRecordSet.Name = name
-
-	batch := []*route53.Change{
-		NorthAmericaRecords,
-		AsiaRecords,
-		JapanRecords,
-		EuropeRecords,
-		DefaultRecords,
+	var batch []*route53.Change
+	batch = c.normalChanges
+	for _, r := range c.fallbackChanges {
+		batch = append(batch, r)
 	}
 
-	if changesType == "CREATE" {
-		CloudFrontRecords.Action = aws.String("DELETE")
-		batch = append([]*route53.Change{CloudFrontRecords}, batch...)
-	} else {
-		batch = append(batch, CloudFrontRecords)
-	}
+	//	for i, r := range batch {
+	//		fmt.Println(i, r.GoString())
+	//	}
 
+	return c.makeChanges(batch)
+}
+
+func (c *CloudRoute53) makeChanges(batch []*route53.Change) (bool, error) {
 	var input = &route53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: batch,
@@ -99,7 +94,6 @@ func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-
 	return true, nil
 }
 
@@ -121,7 +115,8 @@ func recordsToChanges(records []config.DNSRecord) ([]*route53.Change, error) {
 				TTL:             aws.Int64(int64(*r.TTL)),
 				Type:            r.Type,
 				GeoLocation: &route53.GeoLocation{
-					CountryCode: r.CountryCode,
+					CountryCode:   r.CountryCode,
+					ContinentCode: r.ContinentCode,
 				},
 				SetIdentifier: r.Identifier,
 			},

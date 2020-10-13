@@ -53,7 +53,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	os.Exit(0)
 
 	var currentState string
 	currentState, err = r53client.State()
