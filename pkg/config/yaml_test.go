@@ -162,7 +162,7 @@ func TestNewYAMLConfig(t *testing.T) {
 	if len(cfg.Fallback) != 1 {
 		t.Error()
 	}
-    if cfg.Fallback[0].Name != "content" {
+	if cfg.Fallback[0].Name != "content" {
 		t.Error()
 	}
 	if cfg.Fallback[0].Values[0] != "xxxx.cloudfront.net" {

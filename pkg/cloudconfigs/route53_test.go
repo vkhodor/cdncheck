@@ -60,17 +60,16 @@ func TestRecordsToChanges(t *testing.T) {
   }
 }`
 
-
 	var records []config.DNSRecord
 	values := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3"}
 
 	records = append(records, config.DNSRecord{
-		Identifier: aws.String("test"),
-		Values: &values,
-		Type: aws.String("A"),
+		Identifier:  aws.String("test"),
+		Values:      &values,
+		Type:        aws.String("A"),
 		CountryCode: aws.String("US"),
-		TTL: aws.Int(60),
-		Name: aws.String("content"),
+		TTL:         aws.Int(60),
+		Name:        aws.String("content"),
 	})
 
 	changes, err := recordsToChanges(records)
