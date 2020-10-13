@@ -81,7 +81,7 @@ func main() {
 	}
 
 	if cliFlags.SetNormal {
-		if currentState == "normal" {
+		if currentState == "normal" && !cliFlags.Force{
 			logger.Info("Current CDN state is already normal. Do nothing")
 			os.Exit(0)
 		}
@@ -94,7 +94,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if currentState == "fallback" {
+	if currentState == "fallback" && !cliFlags.Force{
 		logger.Info("Current CDN state is already fallback. Do nothing")
 		os.Exit(0)
 	}

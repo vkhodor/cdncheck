@@ -12,6 +12,7 @@ type CLIFlags struct {
 	GetState    bool
 	Debug       bool
 	ConfigFile  string
+	Force       bool
 }
 
 func GetArgs() CLIFlags {
@@ -20,6 +21,7 @@ func GetArgs() CLIFlags {
 	flagGetState := flag.Bool("get.state", false, "get CDN current state and exit")
 	flagDebug := flag.Bool("debug", false, "debug mode")
 	flagConfigFile := flag.String("config", "/etc/cdncheck/config.yml", "config file")
+	flagForce := flag.Bool("force", false, "forcing state")
 
 	flag.Parse()
 
@@ -29,6 +31,7 @@ func GetArgs() CLIFlags {
 		GetState:    *flagGetState,
 		Debug:       *flagDebug,
 		ConfigFile:  *flagConfigFile,
+		Force:       *flagForce,
 	}
 }
 
