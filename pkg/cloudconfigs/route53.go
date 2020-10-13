@@ -103,8 +103,32 @@ func (c *CloudRoute53) makeChanges(changesType string) (bool, error) {
 	return true, nil
 }
 
-func (c *CloudRoute53) loadRecordsByType(config config.Config, []config.DNSRecord, []*route53.Change) {
+func recordsToChanges(records []config.DNSRecord) ([]*route53.Change, error) {
+	var changes []*route53.Change
+	for _, r := range records {
+		var values []*route53.ResourceRecord
+		for _, v := range *r.Values {
+			values = append(values, &route53.ResourceRecord{
+				Value: aws.String(v),
+			})
 
+		}
+
+		changes = append(changes, &route53.Change{
+			ResourceRecordSet: &route53.ResourceRecordSet{
+				Name:            r.Name,
+				ResourceRecords: values,
+				TTL:             aws.Int64(int64(*r.TTL)),
+				Type:            r.Type,
+				GeoLocation: &route53.GeoLocation{
+					CountryCode: r.CountryCode,
+				},
+				SetIdentifier: r.Identifier,
+			},
+		})
+	}
+
+	return changes, nil
 }
 
 func (c *CloudRoute53) LoadRecords(config config.Config) error {
@@ -118,29 +142,12 @@ func (c *CloudRoute53) LoadRecords(config config.Config) error {
 		return err
 	}
 
-	for _, n := range normalRecords {
-		var values []*route53.ResourceRecord
-		for _,v := range *n.Values{
-			values = append(values, &route53.ResourceRecord{
-				Value: aws.String(v),
-			})
-
-		}
-
-		c.normalRecords = append(c.normalRecords, &route53.Change{
-			ResourceRecordSet: &route53.ResourceRecordSet{
-				ResourceRecords: values,
-				TTL:  aws.Int64(int64(*n.TTL)),
-				Type: n.Type,
-				GeoLocation: &route53.GeoLocation{
-					CountryCode: n.CountryCode,
-				},
-				SetIdentifier: n.Identifier,
-			},
-		})
-
+	c.normalRecords, err = recordsToChanges(normalRecords)
+	if err != nil {
+		return err
 	}
 
+	c.fallbackRecords, err = recordsToChanges(fallbackRecords)
 
 	return nil
 }

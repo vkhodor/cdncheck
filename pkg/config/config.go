@@ -12,6 +12,7 @@ type Config interface {
 }
 
 type DNSRecord struct {
+	Name        *string
 	Identifier  *string
 	Values      *[]string
 	Type        *string

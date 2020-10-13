@@ -25,7 +25,8 @@ cdnHosts:
   - 'j-01.cdn.qwerty.com'
 
 normal:
-  - identifier: 'default-content'
+  - name: content
+    identifier: 'default-content'
     values:
       - '1.2.3.4'
       - '1.1.1.1'
@@ -33,7 +34,8 @@ normal:
     ttl: 60
     countryCode: '*'
 
-  - identifier: 'u-content'
+  - name: content
+    identifier: 'u-content'
     values:
       - '127.0.0.1'
       - '127.0.0.2'
@@ -41,21 +43,24 @@ normal:
     ttl: 60
     countryCode: 'NA'
 
-  - identifier: 'j-content'
+  - name: content
+    identifier: 'j-content'
     values:
       - '8.8.8.8'
     type: 'A'
     ttl: 60
     countryCode: 'JP'
 
-  - identifier: 'a-content'
+  - name: content
+    identifier: 'a-content'
     values:
       - '4.4.4.4'
     type: 'A'
     ttl: 60
     countryCode: 'AS'
 
-  - identifier: 'e-content'
+  - name: content
+    identifier: 'e-content'
     values:
       - '5.5.5.5'
     type: 'A'
@@ -63,7 +68,8 @@ normal:
     countryCode: 'EU'
 
 fallback:
-  - values:
+  - name: content
+    values:
       - 'xxxx.cloudfront.net'
     type: 'CNAME'
     ttl: 60
@@ -135,6 +141,9 @@ func TestNewYAMLConfig(t *testing.T) {
 
 	for _, record := range cfg.Normal {
 		if record.Identifier == "u-content" {
+			if record.Name != "content" {
+				t.Error()
+			}
 			if len(record.Values) != 2 {
 				t.Error()
 			}
@@ -151,6 +160,9 @@ func TestNewYAMLConfig(t *testing.T) {
 	}
 
 	if len(cfg.Fallback) != 1 {
+		t.Error()
+	}
+    if cfg.Fallback[0].Name != "content" {
 		t.Error()
 	}
 	if cfg.Fallback[0].Values[0] != "xxxx.cloudfront.net" {

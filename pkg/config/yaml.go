@@ -24,6 +24,7 @@ type YAMLConfig struct {
 	CDNHosts []string `yaml:"cdnHosts"`
 
 	Normal []struct {
+		Name        string   `yaml:"name"`
 		Identifier  string   `yaml:"identifier"`
 		Values      []string `yaml:"values"`
 		Type        string   `yaml:"type"`
@@ -32,6 +33,7 @@ type YAMLConfig struct {
 	}
 
 	Fallback []struct {
+		Name        string   `yaml:"name"`
 		Identifier  string   `yaml:"identifier"`
 		Values      []string `yaml:"values"`
 		Type        string   `yaml:"type"`
@@ -83,6 +85,7 @@ func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Fallback {
 		records = append(records, DNSRecord{
+			Name:        &r.Name,
 			Values:      &r.Values,
 			Type:        &r.Type,
 			TTL:         &r.TTL,
@@ -98,6 +101,7 @@ func (y *YAMLConfig) GetNormalRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Normal {
 		records = append(records, DNSRecord{
+			Name:        &r.Name,
 			Values:      &r.Values,
 			Type:        &r.Type,
 			TTL:         &r.TTL,

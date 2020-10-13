@@ -48,6 +48,13 @@ func main() {
 		conf.Route53.RecordName,
 		logger,
 	)
+
+	err = r53client.LoadRecords(conf)
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(0)
+
 	var currentState string
 	currentState, err = r53client.State()
 	if err != nil {
