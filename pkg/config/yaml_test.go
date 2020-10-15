@@ -24,6 +24,9 @@ cdnHosts:
   - 'e-01.cdn.qwerty.com'
   - 'j-01.cdn.qwerty.com'
 
+normalPrefix: xxx
+fallbackPrefix: yyy
+
 normal:
   - name: content
     identifier: 'default-content'
@@ -122,6 +125,14 @@ func TestNewYAMLConfig(t *testing.T) {
 		t.Error()
 	}
 	if len(cfg.CDNHosts) != 4 {
+		t.Error()
+	}
+
+	if *cfg.FallbackPrefix != "yyy" {
+		t.Error()
+	}
+
+	if *cfg.NormalPrefix != "xxx" {
 		t.Error()
 	}
 
