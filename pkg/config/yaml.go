@@ -2,13 +2,15 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/checks"
 	"gopkg.in/yaml.v2"
 )
 
 type YAMLConfig struct {
-	Debug bool `yaml:"debug"`
+	Logger *logrus.Logger
+	Debug  bool `yaml:"debug"`
 
 	Slack struct {
 		URL      string `yaml:"url"`
@@ -21,7 +23,9 @@ type YAMLConfig struct {
 		RecordName string `yaml:"recordName"`
 	}
 
-	CDNHosts []string `yaml:"cdnHosts"`
+	CDNHosts       []string `yaml:"cdnHosts"`
+	NormalPrefix   *string  `yaml:"normalPrefix"`
+	FallbackPrefix *string  `yaml:"fallbackPrefix"`
 
 	Normal []struct {
 		Name          *string   `yaml:"name"`
@@ -54,7 +58,7 @@ type YAMLConfig struct {
 	}
 }
 
-func (y *YAMLConfig) GetChecks(logger *logrus.Logger) ([]checks.Check, error) {
+func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 	var chks []checks.Check
 	for _, check := range y.Checks {
 		switch name := check.Name; name {
@@ -63,7 +67,7 @@ func (y *YAMLConfig) GetChecks(logger *logrus.Logger) ([]checks.Check, error) {
 				&checks.SSLCheck{
 					Port:        check.Port,
 					CertDomains: check.Domains,
-					Logger:      logger,
+					Logger:      y.Logger,
 				},
 			)
 		case "url":
@@ -73,7 +77,7 @@ func (y *YAMLConfig) GetChecks(logger *logrus.Logger) ([]checks.Check, error) {
 					Schema:    check.Schema,
 					Path:      check.Path,
 					RightCode: check.Code,
-					Logger:    logger,
+					Logger:    y.Logger,
 				},
 			)
 		default:
@@ -86,16 +90,17 @@ func (y *YAMLConfig) GetChecks(logger *logrus.Logger) ([]checks.Check, error) {
 func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Fallback {
-		records = append(records, DNSRecord{
+		ident := fmt.Sprintf("%v:%v", *y.FallbackPrefix, *r.Identifier)
+		record := DNSRecord{
 			Name:          r.Name,
 			Values:        r.Values,
 			Type:          r.Type,
 			TTL:           r.TTL,
 			CountryCode:   r.CountryCode,
 			ContinentCode: r.ContinentCode,
-			Identifier:    r.Identifier,
-		},
-		)
+			Identifier:    &ident,
+		}
+		records = append(records, record)
 	}
 	return records, nil
 }
@@ -103,21 +108,41 @@ func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 func (y *YAMLConfig) GetNormalRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Normal {
-		records = append(records, DNSRecord{
+		ident := fmt.Sprintf("%v:%v", *y.NormalPrefix, *r.Identifier)
+		record := DNSRecord{
 			Name:          r.Name,
 			Values:        r.Values,
 			Type:          r.Type,
 			TTL:           r.TTL,
 			CountryCode:   r.CountryCode,
 			ContinentCode: r.ContinentCode,
-			Identifier:    r.Identifier,
-		})
+			Identifier:    &ident,
+		}
+		records = append(records, record)
 	}
 	return records, nil
+}
+
+func (y *YAMLConfig) GetLogger() *logrus.Logger {
+	return y.Logger
 }
 
 func NewYAMLConfig(yamlData []byte) (*YAMLConfig, error) {
 	var config YAMLConfig
 	err := yaml.Unmarshal(yamlData, &config)
+
+	level := logrus.InfoLevel
+	if config.Debug {
+		level = logrus.DebugLevel
+	}
+	config.Logger = NewLogger(level)
+
 	return &config, err
+}
+
+func NewLogger(level logrus.Level) *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{DisableColors: false, FullTimestamp: true})
+	logger.SetLevel(level)
+	return logger
 }

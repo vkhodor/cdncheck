@@ -1,12 +1,11 @@
 package config
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/checks"
 )
 
 type Config interface {
-	GetChecks(*logrus.Logger) ([]checks.Check, error)
+	GetChecks() ([]checks.Check, error)
 	GetFallbackRecords() ([]DNSRecord, error)
 	GetNormalRecords() ([]DNSRecord, error)
 }

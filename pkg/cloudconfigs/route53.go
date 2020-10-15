@@ -76,10 +76,6 @@ func (c *CloudRoute53) Fallback() (bool, error) {
 		batch = append(batch, r)
 	}
 
-	//	for i, r := range batch {
-	//		fmt.Println(i, r.GoString())
-	//	}
-
 	return c.makeChanges(batch)
 }
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	logrus "github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/cli"
 	"github.com/vkhodor/cdncheck/pkg/senders"
 	"github.com/vkhodor/cdncheck/pkg/servers"
@@ -11,14 +10,7 @@ import (
 	"github.com/vkhodor/cdncheck/pkg/cloudconfigs"
 )
 
-var version = "0.0.2"
-
-func NewLogger(level logrus.Level) *logrus.Logger {
-	logger := logrus.New()
-	logger.SetFormatter(&logrus.TextFormatter{DisableColors: false, FullTimestamp: true})
-	logger.SetLevel(level)
-	return logger
-}
+var version = "0.1.2"
 
 func main() {
 	cliFlags := cli.GetArgs()
@@ -34,11 +26,7 @@ func main() {
 		conf.Slack.Channel,
 	)
 
-	level := logrus.InfoLevel
-	if conf.Debug {
-		level = logrus.DebugLevel
-	}
-	logger := NewLogger(level)
+	logger := conf.GetLogger()
 
 	logger.Info("zoneId: " + conf.Route53.ZoneId)
 	logger.Info("recordName: " + conf.Route53.RecordName)
@@ -99,7 +87,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	checksList, err := conf.GetChecks(logger)
+	checksList, err := conf.GetChecks()
 	if err != nil {
 		panic(err)
 	}
