@@ -55,7 +55,7 @@ func main() {
 	}
 
 	if cliFlags.SetFallback {
-		if currentState == "fallback" {
+		if currentState == "fallback" && !cliFlags.Check && !cliFlags.Force {
 			logger.Info("Current CDN state is already fallback. Do nothing")
 			os.Exit(0)
 		}
@@ -82,7 +82,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if currentState == "fallback" && !cliFlags.Force {
+	if currentState == "fallback" && !cliFlags.Check && !cliFlags.Force {
 		logger.Info("Current CDN state is already fallback. Do nothing")
 		os.Exit(0)
 	}
@@ -104,6 +104,10 @@ func main() {
 		ok, err := server.Check()
 		logger.Info("Check result: ", ok, err)
 		if !ok {
+			if cliFlags.Check {
+				fmt.Println("result: ", ok)
+				break
+			}
 			_ = sender.Send("CDN check returned error. Going to Fallback...")
 			ok, err = r53client.Fallback()
 			if !ok {

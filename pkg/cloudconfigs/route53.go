@@ -2,7 +2,6 @@ package cloudconfigs
 
 import (
 	"errors"
-	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -64,9 +63,6 @@ func (c *CloudRoute53) Normal() (bool, error) {
 }
 
 func (c *CloudRoute53) Fallback() (bool, error) {
-	for _, r := range c.normalChanges {
-		fmt.Println(r.String())
-	}
 	c.setNormalAction("DELETE")
 	c.setFallbackAction("CREATE")
 
