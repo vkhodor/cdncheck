@@ -29,11 +29,11 @@ func main() {
 	logger := conf.GetLogger()
 
 	logger.Info("zoneId: " + conf.Route53.ZoneId)
-	logger.Info("recordName: " + conf.Route53.RecordName)
+	logger.Info("recordName: " + *conf.Route53.RecordName)
 
 	var r53client cloudconfigs.CloudConfig = cloudconfigs.NewCloudRoute53(
 		conf.Route53.ZoneId,
-		conf.Route53.RecordName,
+		*conf.Route53.RecordName,
 		logger,
 	)
 

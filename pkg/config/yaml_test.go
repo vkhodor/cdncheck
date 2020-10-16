@@ -28,8 +28,7 @@ normalPrefix: xxx
 fallbackPrefix: yyy
 
 normal:
-  - name: content
-    identifier: 'default-content'
+  - identifier: 'default-content'
     values:
       - '1.2.3.4'
       - '1.1.1.1'
@@ -37,8 +36,7 @@ normal:
     ttl: 60
     countryCode: '*'
 
-  - name: content
-    identifier: 'u-content'
+  - identifier: 'u-content'
     values:
       - '127.0.0.1'
       - '127.0.0.2'
@@ -46,24 +44,21 @@ normal:
     ttl: 60
     continentCode: 'NA'
 
-  - name: content
-    identifier: 'j-content'
+  - identifier: 'j-content'
     values:
       - '8.8.8.8'
     type: 'A'
     ttl: 60
     countryCode: 'JP'
 
-  - name: content
-    identifier: 'a-content'
+  - identifier: 'a-content'
     values:
       - '4.4.4.4'
     type: 'A'
     ttl: 60
     continentCode: 'AS'
 
-  - name: content
-    identifier: 'e-content'
+  - identifier: 'e-content'
     values:
       - '5.5.5.5'
     type: 'A'
@@ -71,7 +66,7 @@ normal:
     continentCode: 'EU'
 
 fallback:
-  - name: content
+  - identifier: default-content
     values:
       - 'xxxx.cloudfront.net'
     type: 'CNAME'
@@ -121,7 +116,7 @@ func TestNewYAMLConfig(t *testing.T) {
 	if cfg.Route53.ZoneId != "123" {
 		t.Error()
 	}
-	if cfg.Route53.RecordName != "qwerty.com." {
+	if *cfg.Route53.RecordName != "qwerty.com." {
 		t.Error()
 	}
 	if len(cfg.CDNHosts) != 4 {
@@ -152,9 +147,6 @@ func TestNewYAMLConfig(t *testing.T) {
 
 	for _, record := range cfg.Normal {
 		if *record.Identifier == "u-content" {
-			if *record.Name != "content" {
-				t.Error()
-			}
 			if len(*record.Values) != 2 {
 				t.Error()
 			}
@@ -173,9 +165,7 @@ func TestNewYAMLConfig(t *testing.T) {
 	if len(cfg.Fallback) != 1 {
 		t.Error()
 	}
-	if *cfg.Fallback[0].Name != "content" {
-		t.Error()
-	}
+
 	values := *cfg.Fallback[0].Values
 	if values[0] != "xxxx.cloudfront.net" {
 		t.Error()

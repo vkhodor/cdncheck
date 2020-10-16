@@ -19,8 +19,8 @@ type YAMLConfig struct {
 	}
 
 	Route53 struct {
-		ZoneId     string `yaml:"zoneId"`
-		RecordName string `yaml:"recordName"`
+		ZoneId     string  `yaml:"zoneId"`
+		RecordName *string `yaml:"recordName"`
 	}
 
 	CDNHosts       []string `yaml:"cdnHosts"`
@@ -28,7 +28,6 @@ type YAMLConfig struct {
 	FallbackPrefix *string  `yaml:"fallbackPrefix"`
 
 	Normal []struct {
-		Name          *string   `yaml:"name"`
 		Identifier    *string   `yaml:"identifier"`
 		Values        *[]string `yaml:"values"`
 		Type          *string   `yaml:"type"`
@@ -38,7 +37,6 @@ type YAMLConfig struct {
 	}
 
 	Fallback []struct {
-		Name          *string   `yaml:"name"`
 		Identifier    *string   `yaml:"identifier"`
 		Values        *[]string `yaml:"values"`
 		Type          *string   `yaml:"type"`
@@ -92,7 +90,7 @@ func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 	for _, r := range y.Fallback {
 		ident := fmt.Sprintf("%v:%v", *y.FallbackPrefix, *r.Identifier)
 		record := DNSRecord{
-			Name:          r.Name,
+			Name:          y.Route53.RecordName,
 			Values:        r.Values,
 			Type:          r.Type,
 			TTL:           r.TTL,
@@ -110,7 +108,7 @@ func (y *YAMLConfig) GetNormalRecords() ([]DNSRecord, error) {
 	for _, r := range y.Normal {
 		ident := fmt.Sprintf("%v:%v", *y.NormalPrefix, *r.Identifier)
 		record := DNSRecord{
-			Name:          r.Name,
+			Name:          y.Route53.RecordName,
 			Values:        r.Values,
 			Type:          r.Type,
 			TTL:           r.TTL,
