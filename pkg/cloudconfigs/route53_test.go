@@ -3,19 +3,25 @@ package cloudconfigs
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/config"
 	"testing"
 )
 
 func TestGetState(t *testing.T) {
+
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{DisableColors: false, FullTimestamp: true})
+	logger.SetLevel(logrus.DebugLevel)
+
 	records := []*route53.ResourceRecordSet{
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("CNAME")},
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("fallback:xxx")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("CNAME"), SetIdentifier: aws.String("fallback:yyy")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("fallback:zzz")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("fallback:aaaa")},
 	}
 
-	result, err := getState(records, "content.cdn.personaly.bid")
+	result, err := getState(records, logger)
 	if err != nil {
 		t.Error()
 	}
@@ -24,12 +30,12 @@ func TestGetState(t *testing.T) {
 	}
 
 	records = []*route53.ResourceRecordSet{
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
-		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("normal:aaaa")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("normal:bbbb")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("normal:cccc")},
 	}
 
-	result, err = getState(records, "content.cdn.personaly.bid")
+	result, err = getState(records, logger)
 	if err != nil {
 		t.Error()
 	}
@@ -37,6 +43,19 @@ func TestGetState(t *testing.T) {
 		t.Error()
 	}
 
+	records = []*route53.ResourceRecordSet{
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("normal:aaaaa")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("fallback:b")},
+		&route53.ResourceRecordSet{Name: aws.String("content.cdn.personaly.bid"), Type: aws.String("A"), SetIdentifier: aws.String("normal:default-content")},
+	}
+
+	result, err = getState(records, logger)
+	if err == nil {
+		t.Error()
+	}
+	if result != "error" {
+		t.Error()
+	}
 }
 
 func TestRecordsToChanges(t *testing.T) {

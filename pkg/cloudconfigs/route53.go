@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/config"
+	"strings"
 )
 
 type CloudRoute53 struct {
@@ -21,13 +22,19 @@ type CloudRoute53 struct {
 func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *CloudRoute53 {
 	mySession := session.Must(session.NewSession())
 	svc := route53.New(mySession)
-	ret := CloudRoute53{client: svc, zoneId: zoneId, recordName: recordName, logger: logger}
+	ret := CloudRoute53{
+		client: svc,
+		zoneId: zoneId,
+		recordName: recordName,
+		logger: logger,
+	}
 	return &ret
 }
 
 func (c *CloudRoute53) State() (string, error) {
 	input := &route53.ListResourceRecordSetsInput{
-		HostedZoneId: aws.String(c.zoneId),
+		HostedZoneId:    aws.String(c.zoneId),
+		StartRecordName: &c.recordName,
 	}
 
 	output, err := c.client.ListResourceRecordSets(input)
@@ -35,7 +42,7 @@ func (c *CloudRoute53) State() (string, error) {
 		c.logger.Debug(err)
 		return "error", err
 	}
-	return getState(output.ResourceRecordSets, c.recordName)
+	return getState(output.ResourceRecordSets, c.logger)
 }
 
 func (c *CloudRoute53) setNormalAction(action string) {
@@ -139,14 +146,26 @@ func (c *CloudRoute53) LoadChanges(config config.Config) error {
 	return nil
 }
 
-func getState(records []*route53.ResourceRecordSet, recordName string) (string, error) {
+func getState(records []*route53.ResourceRecordSet, logger *logrus.Logger) (string, error) {
+	state := ""
 	if len(records) == 0 {
-		return "error", errors.New("len of found records is null")
+		error := errors.New("len of found records is null")
+		logger.Debug("error ", error)
+		return "error", error
 	}
-	for _, record := range records {
-		if *record.Name == recordName && *record.Type == "CNAME" {
-			return "fallback", nil
+	for i, record := range records {
+		recordState := strings.Split(*record.SetIdentifier, ":")[0]
+		if i == 0 {
+			state = recordState
+			continue
+		}
+
+		if state != recordState {
+			e := errors.New("mismatch in record identifiers")
+			logger.Debug("error ", e)
+			return "error", e
 		}
 	}
-	return "normal", nil
+	logger.Debug(state)
+	return state, nil
 }
