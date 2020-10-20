@@ -23,10 +23,10 @@ func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *C
 	mySession := session.Must(session.NewSession())
 	svc := route53.New(mySession)
 	ret := CloudRoute53{
-		client: svc,
-		zoneId: zoneId,
+		client:     svc,
+		zoneId:     zoneId,
 		recordName: recordName,
-		logger: logger,
+		logger:     logger,
 	}
 	return &ret
 }

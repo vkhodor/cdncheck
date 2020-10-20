@@ -55,35 +55,35 @@ func main() {
 	}
 
 	if cliFlags.SetFallback {
-		if currentState == "fallback" && !cliFlags.Check && !cliFlags.Force {
-			logger.Info("Current CDN state is already fallback. Do nothing")
+		if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
+			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 			os.Exit(0)
 		}
 		_, err := r53client.Fallback()
 		if err != nil {
-			logger.Fatalln("Can't fallback cloud configuration: ", err)
+			logger.Fatalln(fmt.Sprintf("Can't %v cloud configuration: ", *conf.FallbackPrefix), err)
 		}
-		logger.Info("CDN state changed to fallback")
-		sender.Send("CDN state changed to fallback.")
+		logger.Info("CDN state changed to ", *conf.FallbackPrefix)
+		sender.Send(fmt.Sprintf("CDN state changed to %v!", *conf.FallbackPrefix))
 		os.Exit(0)
 	}
 
 	if cliFlags.SetNormal {
-		if currentState == "normal" && !cliFlags.Force {
-			logger.Info("Current CDN state is already normal. Do nothing")
+		if currentState == *conf.NormalPrefix && !cliFlags.Force {
+			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 			os.Exit(0)
 		}
 		_, err = r53client.Normal()
 		if err != nil {
-			logger.Fatalln("Can't back cloud configuration to normal state: ", err)
+			logger.Fatalln(fmt.Sprintf("Can't back cloud configuration to %v state: ", *conf.FallbackPrefix), err)
 		}
-		logger.Info("CDN state changed to normal")
-		sender.Send("CDN state changed to normal.")
+		logger.Info("CDN state changed to ", *conf.FallbackPrefix)
+		sender.Send(fmt.Sprintf("CDN state changed to %v.", *conf.FallbackPrefix))
 		os.Exit(0)
 	}
 
-	if currentState == "fallback" && !cliFlags.Check && !cliFlags.Force {
-		logger.Info("Current CDN state is already fallback. Do nothing")
+	if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
+		logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 		os.Exit(0)
 	}
 
@@ -111,11 +111,11 @@ func main() {
 			_ = sender.Send("CDN check returned error. Going to Fallback...")
 			ok, err = r53client.Fallback()
 			if !ok {
-				logger.Fatalln("Can't change CDN state to fallback: ", err)
-				_ = sender.Send(fmt.Sprintf("Can't change CDN state to fallback: %v", err))
+				logger.Fatalln(fmt.Sprintf("Can't change CDN state to %v: ", *conf.FallbackPrefix), err)
+				_ = sender.Send(fmt.Sprintf("Can't change CDN state to %v: %v", *conf.FallbackPrefix, err))
 			}
-			logger.Info("CDN state changed to fallback")
-			_ = sender.Send("CDN state changed to fallback!")
+			logger.Info("CDN state changed to ", *conf.FallbackPrefix)
+			_ = sender.Send(fmt.Sprintf("CDN state changed to %v!", *conf.FallbackPrefix))
 			break
 		}
 	}
