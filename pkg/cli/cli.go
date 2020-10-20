@@ -2,6 +2,7 @@ package cli
 
 import (
 	"flag"
+	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/config"
 	"io/ioutil"
 )
@@ -51,6 +52,7 @@ func GetConfig(flags *CLIFlags) (*config.YAMLConfig, error) {
 
 	if flags.Debug {
 		conf.Debug = true
+		conf.Logger = config.NewLogger(logrus.DebugLevel)
 	}
 
 	return conf, nil

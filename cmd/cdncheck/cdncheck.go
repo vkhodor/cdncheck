@@ -28,6 +28,7 @@ func main() {
 
 	logger := conf.GetLogger()
 
+	logger.Info("debug:", conf.Debug)
 	logger.Info("zoneId: " + conf.Route53.ZoneId)
 	logger.Info("recordName: " + *conf.Route53.RecordName)
 

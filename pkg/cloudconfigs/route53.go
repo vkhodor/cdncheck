@@ -33,7 +33,7 @@ func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *C
 
 func (c *CloudRoute53) State() (string, error) {
 	input := &route53.ListResourceRecordSetsInput{
-		HostedZoneId:    aws.String(c.zoneId),
+		HostedZoneId: aws.String(c.zoneId),
 	}
 
 	output, err := c.client.ListResourceRecordSets(input)
