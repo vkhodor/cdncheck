@@ -149,19 +149,17 @@ func (c *CloudRoute53) LoadChanges(config config.Config) error {
 func getState(records []*route53.ResourceRecordSet, logger *logrus.Logger) (string, error) {
 	state := ""
 	if len(records) == 0 {
-		error := errors.New("len of found records is null")
-		logger.Debug("error ", error)
-		return "error", error
+		err := errors.New("len of found records is null")
+		logger.Debug("error ", err)
+		return "error", err
 	}
 	for i, record := range records {
 		logger.Debug(i, record)
-		logger.Debug("getState: record.SetIdentifier: ", *record.SetIdentifier)
-		splitedString := strings.Split(*record.SetIdentifier, ":")
-		logger.Debug(splitedString)
-		if len(splitedString) < 0 {
+		if record.SetIdentifier == nil {
 			continue
 		}
-		recordState := splitedString[0]
+
+		recordState := strings.Split(*record.SetIdentifier, ":")[0]
 		if i == 0 {
 			state = recordState
 			continue
