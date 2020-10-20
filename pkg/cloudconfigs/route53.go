@@ -34,7 +34,6 @@ func NewCloudRoute53(zoneId string, recordName string, logger *logrus.Logger) *C
 func (c *CloudRoute53) State() (string, error) {
 	input := &route53.ListResourceRecordSetsInput{
 		HostedZoneId:    aws.String(c.zoneId),
-		StartRecordName: &c.recordName,
 	}
 
 	output, err := c.client.ListResourceRecordSets(input)
@@ -42,7 +41,17 @@ func (c *CloudRoute53) State() (string, error) {
 		c.logger.Debug(err)
 		return "error", err
 	}
-	return getState(output.ResourceRecordSets, c.logger)
+
+	var resourceRecordSets []*route53.ResourceRecordSet
+
+	// Found c.recordName records only
+	for _, record := range output.ResourceRecordSets {
+		if *record.Name == c.recordName {
+			resourceRecordSets = append(resourceRecordSets, record)
+		}
+	}
+
+	return getState(resourceRecordSets, c.logger)
 }
 
 func (c *CloudRoute53) setNormalAction(action string) {
