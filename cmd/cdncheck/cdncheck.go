@@ -70,15 +70,15 @@ func main() {
 
 	if cliFlags.SetNormal {
 		if currentState == *conf.NormalPrefix && !cliFlags.Force {
-			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
+			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.NormalPrefix))
 			os.Exit(0)
 		}
 		_, err = r53client.Normal()
 		if err != nil {
-			logger.Fatalln(fmt.Sprintf("Can't back cloud configuration to %v state: ", *conf.FallbackPrefix), err)
+			logger.Fatalln(fmt.Sprintf("Can't set cloud configuration to %v state: ", *conf.NormalPrefix), err)
 		}
-		logger.Info("CDN state changed to ", *conf.FallbackPrefix)
-		sender.Send(fmt.Sprintf("CDN state changed to %v.", *conf.FallbackPrefix))
+		logger.Info("CDN state changed to ", *conf.NormalPrefix)
+		sender.Send(fmt.Sprintf("CDN state changed to %v.", *conf.NormalPrefix))
 		os.Exit(0)
 	}
 
