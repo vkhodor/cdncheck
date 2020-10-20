@@ -155,7 +155,11 @@ func getState(records []*route53.ResourceRecordSet, logger *logrus.Logger) (stri
 	}
 	for i, record := range records {
 		logger.Debug("getState: record.SetIdentifier: ", *record.SetIdentifier)
-		recordState := strings.Split(*record.SetIdentifier, ":")[0]
+		splitedString := strings.Split(*record.SetIdentifier, ":")
+		if len(splitedString) < 0 {
+			continue
+		}
+		recordState := splitedString[0]
 		if i == 0 {
 			state = recordState
 			continue
