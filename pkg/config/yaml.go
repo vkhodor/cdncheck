@@ -16,6 +16,7 @@ type YAMLConfig struct {
 		URL      string `yaml:"url"`
 		Username string `yaml:"username"`
 		Channel  string `yaml:"channel"`
+		AlwaysFallbackSend bool `yaml:"alwaysFallbackSend: yes"`
 	}
 
 	Route53 struct {

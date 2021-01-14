@@ -57,7 +57,9 @@ func main() {
 
 	if cliFlags.SetFallback {
 		if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
-			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
+			if conf.Slack.AlwaysFallbackSend {
+				_ = sender.Send(fmt.Sprintf("Current CDN state is %v. Do nothing", *conf.FallbackPrefix))
+			}
 			os.Exit(0)
 		}
 		_, err := r53client.Fallback()
@@ -65,7 +67,7 @@ func main() {
 			logger.Fatalln(fmt.Sprintf("Can't %v cloud configuration: ", *conf.FallbackPrefix), err)
 		}
 		logger.Info("CDN state changed to ", *conf.FallbackPrefix)
-		sender.Send(fmt.Sprintf("CDN state changed to %v!", *conf.FallbackPrefix))
+		_ = sender.Send(fmt.Sprintf("CDN state changed to %v!", *conf.FallbackPrefix))
 		os.Exit(0)
 	}
 
@@ -79,7 +81,7 @@ func main() {
 			logger.Fatalln(fmt.Sprintf("Can't set cloud configuration to %v state: ", *conf.NormalPrefix), err)
 		}
 		logger.Info("CDN state changed to ", *conf.NormalPrefix)
-		sender.Send(fmt.Sprintf("CDN state changed to %v.", *conf.NormalPrefix))
+		_ = sender.Send(fmt.Sprintf("CDN state changed to %v.", *conf.NormalPrefix))
 		os.Exit(0)
 	}
 

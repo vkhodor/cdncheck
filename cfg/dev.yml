@@ -5,6 +5,7 @@ slack:
   url: 'https://hooks.slack.com/services/111'
   username: 'cdn'
   channel: 'some-channel'
+  alwaysFallbackSend: yes
 
 route53:
   zoneId: '123'
