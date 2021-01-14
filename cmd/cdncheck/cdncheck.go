@@ -10,8 +10,6 @@ import (
 	"github.com/vkhodor/cdncheck/pkg/cloudconfigs"
 )
 
-var version = "0.1.2"
-
 func main() {
 	cliFlags := cli.GetArgs()
 	fmt.Println(cliFlags.ConfigFile)
@@ -57,9 +55,7 @@ func main() {
 
 	if cliFlags.SetFallback {
 		if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
-			if conf.Slack.AlwaysFallbackSend {
-				_ = sender.Send(fmt.Sprintf("Current CDN state is %v. Do nothing", *conf.FallbackPrefix))
-			}
+			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 			os.Exit(0)
 		}
 		_, err := r53client.Fallback()
@@ -87,6 +83,10 @@ func main() {
 
 	if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
 		logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
+		logger.Debug(conf.Slack.AlwaysFallbackSend)
+		if conf.Slack.AlwaysFallbackSend {
+			_ = sender.Send(fmt.Sprintf("Current CDN state is %v.", *conf.FallbackPrefix))
+		}
 		os.Exit(0)
 	}
 

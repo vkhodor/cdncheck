@@ -13,10 +13,10 @@ type YAMLConfig struct {
 	Debug  bool `yaml:"debug"`
 
 	Slack struct {
-		URL      string `yaml:"url"`
-		Username string `yaml:"username"`
-		Channel  string `yaml:"channel"`
-		AlwaysFallbackSend bool `yaml:"alwaysFallbackSend: yes"`
+		URL                string `yaml:"url"`
+		Username           string `yaml:"username"`
+		Channel            string `yaml:"channel"`
+		AlwaysFallbackSend bool   `yaml:"alwaysFallbackSend"`
 	}
 
 	Route53 struct {
