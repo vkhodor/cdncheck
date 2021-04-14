@@ -55,12 +55,14 @@ func (h *SSLCheck) expirationCheck(crt *x509.Certificate, now time.Time) bool {
 }
 
 func (h *SSLCheck) getCert(host string) (*x509.Certificate, error) {
-
 	strPort := strconv.Itoa(h.Port)
 	h.Logger.Debug("Get SSL Cert from ", host+":"+strPort)
 
-	conn, err := tls.Dial("tcp", host+":"+strPort, &tls.Config{InsecureSkipVerify: true})
-
+	tlsConfig := tls.Config{
+		InsecureSkipVerify: true,
+		ServerName:         h.CertDomains[0],
+	}
+	conn, err := tls.Dial("tcp", host+":"+strPort, &tlsConfig)
 	if err != nil {
 		h.Logger.Debug(err)
 		return nil, err
