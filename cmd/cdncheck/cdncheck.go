@@ -63,7 +63,7 @@ func main() {
 			logger.Fatalln(fmt.Sprintf("Can't %v cloud configuration: ", *conf.FallbackPrefix), err)
 		}
 		logger.Info("CDN state changed to ", *conf.FallbackPrefix)
-		_ = sender.Send(fmt.Sprintf("CDN state changed to %v!", *conf.FallbackPrefix))
+		_ = sender.Send(fmt.Sprintf("[%v] CDN state changed to %v!", *conf.Route53.RecordName, *conf.FallbackPrefix))
 		os.Exit(0)
 	}
 
@@ -77,7 +77,7 @@ func main() {
 			logger.Fatalln(fmt.Sprintf("Can't set cloud configuration to %v state: ", *conf.NormalPrefix), err)
 		}
 		logger.Info("CDN state changed to ", *conf.NormalPrefix)
-		_ = sender.Send(fmt.Sprintf("CDN state changed to %v.", *conf.NormalPrefix))
+		_ = sender.Send(fmt.Sprintf("[%v] CDN state changed to %v.", *conf.Route53.RecordName, *conf.NormalPrefix))
 		os.Exit(0)
 	}
 
@@ -85,7 +85,7 @@ func main() {
 		logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 		logger.Debug(conf.Slack.AlwaysFallbackSend)
 		if conf.Slack.AlwaysFallbackSend {
-			_ = sender.Send(fmt.Sprintf("Current CDN state is %v.", *conf.FallbackPrefix))
+			_ = sender.Send(fmt.Sprintf("[%v] Current CDN state is %v.", *conf.Route53.RecordName, *conf.FallbackPrefix))
 		}
 		os.Exit(0)
 	}
@@ -111,14 +111,14 @@ func main() {
 				fmt.Println("result: ", ok)
 				break
 			}
-			_ = sender.Send("CDN check returned error. Going to Fallback...")
+			_ = sender.Send(fmt.Sprintf("[%v] CDN check returned error. Going to Fallback...", *conf.Route53.RecordName))
 			ok, err = r53client.Fallback()
 			if !ok {
 				logger.Fatalln(fmt.Sprintf("Can't change CDN state to %v: ", *conf.FallbackPrefix), err)
-				_ = sender.Send(fmt.Sprintf("Can't change CDN state to %v: %v", *conf.FallbackPrefix, err))
+				_ = sender.Send(fmt.Sprintf("[%v] Can't change CDN state to %v: %v", *conf.Route53.RecordName, *conf.FallbackPrefix, err))
 			}
 			logger.Info("CDN state changed to ", *conf.FallbackPrefix)
-			_ = sender.Send(fmt.Sprintf("CDN state changed to %v!", *conf.FallbackPrefix))
+			_ = sender.Send(fmt.Sprintf("[%v] CDN state changed to %v!", *conf.Route53.RecordName, *conf.FallbackPrefix))
 			break
 		}
 	}
