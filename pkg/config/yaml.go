@@ -48,13 +48,13 @@ type YAMLConfig struct {
 	}
 
 	Checks []struct {
-		Name    string   `yaml:"name"`
-		Domains []string `yaml:"domains"`
-		Schema  string   `yaml:"schema"`
-		Host    string   `yaml:"host"`
-		Port    int      `yaml:"port"`
-		Code    int      `yaml:"code"`
-		Path    string   `yaml:"path"`
+		Name           string        `yaml:"name"`
+		Domains        []string      `yaml:"domains"`
+		Schema         string        `yaml:"schema"`
+		Host           string        `yaml:"host"`
+		Port           int           `yaml:"port"`
+		Code           int           `yaml:"code"`
+		Path           string        `yaml:"path"`
 		TimeoutSeconds time.Duration `yaml:"timeout"`
 	}
 }
@@ -66,20 +66,21 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 		case "ssl":
 			chks = append(chks,
 				&checks.SSLCheck{
-					Port:        check.Port,
-					CertDomains: check.Domains,
-					Logger:      y.Logger,
+					Port:           check.Port,
+					CertDomains:    check.Domains,
+					TimeoutSeconds: check.TimeoutSeconds,
+					Logger:         y.Logger,
 				},
 			)
 		case "url":
 			chks = append(chks,
 				&checks.URLCheck{
 					TimeoutSeconds: check.TimeoutSeconds,
-					Port:      check.Port,
-					Schema:    check.Schema,
-					Path:      check.Path,
-					RightCode: check.Code,
-					Logger:    y.Logger,
+					Port:           check.Port,
+					Schema:         check.Schema,
+					Path:           check.Path,
+					RightCode:      check.Code,
+					Logger:         y.Logger,
 				},
 			)
 		default:

@@ -8,11 +8,11 @@ import (
 )
 
 type URLCheck struct {
-	Path      string
-	RightCode int
-	Logger    *logrus.Logger
-	Port      int
-	Schema    string
+	Path           string
+	RightCode      int
+	Logger         *logrus.Logger
+	Port           int
+	Schema         string
 	TimeoutSeconds time.Duration
 }
 

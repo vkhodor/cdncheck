@@ -5,14 +5,16 @@ import (
 	"crypto/x509"
 	"errors"
 	"github.com/sirupsen/logrus"
+	"net"
 	"strconv"
 	"time"
 )
 
 type SSLCheck struct {
-	Logger      *logrus.Logger
-	CertDomains []string
-	Port        int
+	Logger         *logrus.Logger
+	CertDomains    []string
+	Port           int
+	TimeoutSeconds time.Duration
 }
 
 func (h *SSLCheck) Check(host string) (bool, error) {
@@ -62,14 +64,20 @@ func (h *SSLCheck) getCert(host string) (*x509.Certificate, error) {
 		InsecureSkipVerify: true,
 		ServerName:         h.CertDomains[0],
 	}
-	conn, err := tls.Dial("tcp", host+":"+strPort, &tlsConfig)
+	conn, err := net.DialTimeout("tcp", host+":"+strPort, h.TimeoutSeconds*time.Second)
+	if err != nil {
+		h.Logger.Debug(err)
+		return nil, err
+	}
+	tlsCon := tls.Client(conn, &tlsConfig)
+	err = tlsCon.Handshake()
 	if err != nil {
 		h.Logger.Debug(err)
 		return nil, err
 	}
 
-	if len(conn.ConnectionState().PeerCertificates) < 1 {
+	if len(tlsCon.ConnectionState().PeerCertificates) < 1 {
 		return nil, errors.New("no SSL certs found")
 	}
-	return conn.ConnectionState().PeerCertificates[0], nil
+	return tlsCon.ConnectionState().PeerCertificates[0], nil
 }

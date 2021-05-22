@@ -69,6 +69,7 @@ checks:
       - 'jp-01.cdn.qwerty.com'
     host: 'jp-01.cdn.qwerty.com'
     port: 443
+    timeout: 10
 
   - name: 'url'
     schema: 'http'
