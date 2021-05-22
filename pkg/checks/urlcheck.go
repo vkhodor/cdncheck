@@ -4,6 +4,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type URLCheck struct {
@@ -12,6 +13,7 @@ type URLCheck struct {
 	Logger    *logrus.Logger
 	Port      int
 	Schema    string
+	TimeoutSeconds time.Duration
 }
 
 func (h *URLCheck) Check(host string) (bool, error) {
@@ -20,10 +22,16 @@ func (h *URLCheck) Check(host string) (bool, error) {
 	}
 	url := h.Schema + "://" + host + ":" + strconv.Itoa(h.Port) + "/" + h.Path
 	h.Logger.Debug("URLCheck: url = ", url)
-	resp, err := http.Get(url)
+
+	client := http.Client{
+		Timeout: h.TimeoutSeconds * time.Second,
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return false, err
 	}
+
 	h.Logger.Debug("URLCheck: ", resp.StatusCode)
 
 	return h.checkCode(resp.StatusCode), nil

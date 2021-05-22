@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/checks"
 	"gopkg.in/yaml.v2"
+	"time"
 )
 
 type YAMLConfig struct {
@@ -54,6 +55,7 @@ type YAMLConfig struct {
 		Port    int      `yaml:"port"`
 		Code    int      `yaml:"code"`
 		Path    string   `yaml:"path"`
+		TimeoutSeconds time.Duration `yaml:"timeout"`
 	}
 }
 
@@ -72,6 +74,7 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 		case "url":
 			chks = append(chks,
 				&checks.URLCheck{
+					TimeoutSeconds: check.TimeoutSeconds,
 					Port:      check.Port,
 					Schema:    check.Schema,
 					Path:      check.Path,
