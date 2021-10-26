@@ -24,15 +24,32 @@ func (h *SSLCheck) Check(host string) (bool, error) {
 	h.Logger.Debug("Retries: ", h.Retries)
 	h.Logger.Debug("Fails: ", h.Fails)
 
-	crt, err := h.getCert(host)
-	if err != nil {
-		return false, err
-	}
+	fails := 0
+	for i := 0; i < h.Retries; i++ {
+		if fails >= h.Fails {
+			return false, nil
+		}
+		h.Logger.Debug("Retry: ", i+1)
+		crt, err := h.getCert(host)
+		if err != nil {
+			fails += 1
+			if fails >= h.Fails {
+				return false, err
+			}
+			continue
+		}
 
-	if !h.dnsNameCheck(crt) {
-		return false, nil
+		if !h.dnsNameCheck(crt) {
+			fails += 1
+			continue
+		}
+
+		if !h.expirationCheck(crt, time.Now()) {
+			fails += 1
+			continue
+		}
 	}
-	if !h.expirationCheck(crt, time.Now()) {
+	if fails >= h.Fails {
 		return false, nil
 	}
 	return true, nil

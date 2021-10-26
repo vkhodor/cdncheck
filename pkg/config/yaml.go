@@ -66,6 +66,12 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 	for _, check := range y.Checks {
 		switch name := check.Name; name {
 		case "ssl":
+			if check.Retries == 0 {
+				check.Retries = 1
+			}
+			if check.Fails == 0 {
+				check.Fails = 1
+			}
 			chks = append(chks,
 				&checks.SSLCheck{
 					Port:           check.Port,
@@ -77,6 +83,12 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 				},
 			)
 		case "url":
+			if check.Retries == 0 {
+				check.Retries = 1
+			}
+			if check.Fails == 0 {
+				check.Fails = 1
+			}
 			chks = append(chks,
 				&checks.URLCheck{
 					TimeoutSeconds: check.TimeoutSeconds,
