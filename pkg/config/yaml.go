@@ -56,6 +56,8 @@ type YAMLConfig struct {
 		Code           int           `yaml:"code"`
 		Path           string        `yaml:"path"`
 		TimeoutSeconds time.Duration `yaml:"timeout"`
+		Retries        int           `yaml:"retries"`
+		Fails          int           `yaml:"fails"`
 	}
 }
 
@@ -70,6 +72,8 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 					CertDomains:    check.Domains,
 					TimeoutSeconds: check.TimeoutSeconds,
 					Logger:         y.Logger,
+					Retries:        check.Retries,
+					Fails:          check.Fails,
 				},
 			)
 		case "url":
@@ -81,6 +85,8 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 					Path:           check.Path,
 					RightCode:      check.Code,
 					Logger:         y.Logger,
+					Retries:        check.Retries,
+					Fails:          check.Fails,
 				},
 			)
 		default:

@@ -15,10 +15,15 @@ type SSLCheck struct {
 	CertDomains    []string
 	Port           int
 	TimeoutSeconds time.Duration
+	Retries        int
+	Fails          int
 }
 
 func (h *SSLCheck) Check(host string) (bool, error) {
 	//	now := time.Now()
+	h.Logger.Debug("Retries: ", h.Retries)
+	h.Logger.Debug("Fails: ", h.Fails)
+
 	crt, err := h.getCert(host)
 	if err != nil {
 		return false, err

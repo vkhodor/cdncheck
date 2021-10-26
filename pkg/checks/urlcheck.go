@@ -14,9 +14,15 @@ type URLCheck struct {
 	Port           int
 	Schema         string
 	TimeoutSeconds time.Duration
+	Retries        int
+	Fails          int
 }
 
 func (h *URLCheck) Check(host string) (bool, error) {
+
+	h.Logger.Debug("Retries: ", h.Retries)
+	h.Logger.Debug("Fails: ", h.Fails)
+
 	if h.Schema == "" {
 		h.Schema = "http"
 	}

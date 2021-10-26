@@ -28,4 +28,6 @@ type Check struct {
 	Port    *int
 	Code    *int
 	Path    *string
+	Retries *int
+	Fails   *int
 }
