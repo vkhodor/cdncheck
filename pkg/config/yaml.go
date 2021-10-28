@@ -10,8 +10,9 @@ import (
 )
 
 type YAMLConfig struct {
-	Logger *logrus.Logger
-	Debug  bool `yaml:"debug"`
+	Logger   *logrus.Logger
+	Debug    bool `yaml:"debug"`
+	AutoBack bool `yaml:"autoback"`
 
 	Slack struct {
 		URL                string `yaml:"url"`
