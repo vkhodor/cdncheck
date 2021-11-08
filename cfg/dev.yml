@@ -17,6 +17,18 @@ cdnHosts:
   - 'e-01.cdn.qwerty.com'
   - 'j-01.cdn.qwerty.com'
 
+#
+# aws route53 list-traffic-policies
+#
+policyBasedNormal:
+    trafficPolicyId: '2d912bec-8e77-44de-8183-070f5227b302'
+    trafficPolicyVersion: 1
+    ttl: 60
+policyBasedFallback:
+    trafficPolicyId: 'ca7be789-cd5f-45af-9e86-310091df7f93'
+    trafficPolicyVersion: 1
+    ttl: 60
+
 normal:
   - identifier: 'default-content'
     values:

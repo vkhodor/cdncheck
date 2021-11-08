@@ -92,6 +92,7 @@ func (c *CloudRoute53) Fallback() (bool, error) {
 }
 
 func (c *CloudRoute53) makeChanges(batch []*route53.Change) (bool, error) {
+	c.logger.Debug(batch)
 	var input = &route53.ChangeResourceRecordSetsInput{
 		ChangeBatch: &route53.ChangeBatch{
 			Changes: batch,

@@ -30,12 +30,19 @@ func main() {
 	logger.Info("autoback: ", conf.AutoBack)
 	logger.Info("zoneId: " + conf.Route53.ZoneId)
 	logger.Info("recordName: " + *conf.Route53.RecordName)
-
 	var r53client cloudconfigs.CloudConfig = cloudconfigs.NewCloudRoute53(
 		conf.Route53.ZoneId,
 		*conf.Route53.RecordName,
 		logger,
 	)
+
+	if true {
+		r53client = cloudconfigs.NewCloudRoute53PolicyBased(
+			conf.Route53.ZoneId,
+			*conf.Route53.RecordName,
+			logger,
+		)
+	}
 
 	err = r53client.LoadChanges(conf)
 	if err != nil {

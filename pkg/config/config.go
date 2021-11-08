@@ -11,13 +11,15 @@ type Config interface {
 }
 
 type DNSRecord struct {
-	Name          *string
-	Identifier    *string
-	Values        *[]string
-	Type          *string
-	TTL           *int
-	CountryCode   *string
-	ContinentCode *string
+	Name                 *string
+	Identifier           *string
+	Values               *[]string
+	Type                 *string
+	TTL                  *int
+	CountryCode          *string
+	ContinentCode        *string
+	TrafficPolicyId      *string
+	TrafficPolicyVersion *int64
 }
 
 type Check struct {

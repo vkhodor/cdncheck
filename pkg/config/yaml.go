@@ -31,21 +31,25 @@ type YAMLConfig struct {
 	FallbackPrefix *string  `yaml:"fallbackPrefix"`
 
 	Normal []struct {
-		Identifier    *string   `yaml:"identifier"`
-		Values        *[]string `yaml:"values"`
-		Type          *string   `yaml:"type"`
-		TTL           *int      `yaml:"ttl"`
-		CountryCode   *string   `yaml:"countryCode"`
-		ContinentCode *string   `yaml:"continentCode"`
+		Identifier           *string   `yaml:"identifier"`
+		Values               *[]string `yaml:"values"`
+		Type                 *string   `yaml:"type"`
+		TTL                  *int      `yaml:"ttl"`
+		CountryCode          *string   `yaml:"countryCode"`
+		ContinentCode        *string   `yaml:"continentCode"`
+		TrafficPolicyId      *string   `yaml:"trafficPolicyId"`
+		TrafficPolicyVersion *int64    `yaml:"trafficPolicyVersion"`
 	}
 
 	Fallback []struct {
-		Identifier    *string   `yaml:"identifier"`
-		Values        *[]string `yaml:"values"`
-		Type          *string   `yaml:"type"`
-		TTL           *int      `yaml:"ttl"`
-		CountryCode   *string   `yaml:"countryCode"`
-		ContinentCode *string   `yaml:"continentCode"`
+		Identifier           *string   `yaml:"identifier"`
+		Values               *[]string `yaml:"values"`
+		Type                 *string   `yaml:"type"`
+		TTL                  *int      `yaml:"ttl"`
+		CountryCode          *string   `yaml:"countryCode"`
+		ContinentCode        *string   `yaml:"continentCode"`
+		TrafficPolicyId      *string   `yaml:"trafficPolicyId"`
+		TrafficPolicyVersion *int64    `yaml:"trafficPolicyVersion"`
 	}
 
 	Checks []struct {
@@ -112,15 +116,29 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Fallback {
+		if r.Identifier == nil {
+			emptyString := ""
+			r.Identifier = &emptyString
+		}
+		if r.TTL == nil {
+			emptyTTL := 0
+			r.TTL = &emptyTTL
+		}
+		if r.Values == nil {
+			var emptyValues []string
+			r.Values = &emptyValues
+		}
 		ident := fmt.Sprintf("%v:%v", *y.FallbackPrefix, *r.Identifier)
 		record := DNSRecord{
-			Name:          y.Route53.RecordName,
-			Values:        r.Values,
-			Type:          r.Type,
-			TTL:           r.TTL,
-			CountryCode:   r.CountryCode,
-			ContinentCode: r.ContinentCode,
-			Identifier:    &ident,
+			Name:                 y.Route53.RecordName,
+			Values:               r.Values,
+			Type:                 r.Type,
+			TTL:                  r.TTL,
+			CountryCode:          r.CountryCode,
+			ContinentCode:        r.ContinentCode,
+			Identifier:           &ident,
+			TrafficPolicyId:      r.TrafficPolicyId,
+			TrafficPolicyVersion: r.TrafficPolicyVersion,
 		}
 		records = append(records, record)
 	}
@@ -130,15 +148,29 @@ func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 func (y *YAMLConfig) GetNormalRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Normal {
+		if r.Identifier == nil {
+			emptyString := ""
+			r.Identifier = &emptyString
+		}
+		if r.TTL == nil {
+			emptyTTL := 0
+			r.TTL = &emptyTTL
+		}
+		if r.Values == nil {
+			var emptyValues []string
+			r.Values = &emptyValues
+		}
 		ident := fmt.Sprintf("%v:%v", *y.NormalPrefix, *r.Identifier)
 		record := DNSRecord{
-			Name:          y.Route53.RecordName,
-			Values:        r.Values,
-			Type:          r.Type,
-			TTL:           r.TTL,
-			CountryCode:   r.CountryCode,
-			ContinentCode: r.ContinentCode,
-			Identifier:    &ident,
+			Name:                 y.Route53.RecordName,
+			Values:               r.Values,
+			Type:                 r.Type,
+			TTL:                  r.TTL,
+			CountryCode:          r.CountryCode,
+			ContinentCode:        r.ContinentCode,
+			Identifier:           &ident,
+			TrafficPolicyId:      r.TrafficPolicyId,
+			TrafficPolicyVersion: r.TrafficPolicyVersion,
 		}
 		records = append(records, record)
 	}
