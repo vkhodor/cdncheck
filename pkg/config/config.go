@@ -8,6 +8,8 @@ type Config interface {
 	GetChecks() ([]checks.Check, error)
 	GetFallbackRecords() ([]DNSRecord, error)
 	GetNormalRecords() ([]DNSRecord, error)
+	GetPolicyBasedNormalRecord() (DNSRecord, error)
+	GetPolicyBasedFallbackRecord() (DNSRecord, error)
 }
 
 type DNSRecord struct {

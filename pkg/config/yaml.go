@@ -30,6 +30,18 @@ type YAMLConfig struct {
 	NormalPrefix   *string  `yaml:"normalPrefix"`
 	FallbackPrefix *string  `yaml:"fallbackPrefix"`
 
+	PolicyBasedNormal struct {
+		TTL                  *int    `yaml:"ttl"`
+		TrafficPolicyId      *string `yaml:"trafficPolicyId"`
+		TrafficPolicyVersion *int64  `yaml:"trafficPolicyVersion"`
+	}
+
+	PolicyBasedFallback struct {
+		TTL                  *int    `yaml:"ttl"`
+		TrafficPolicyId      *string `yaml:"trafficPolicyId"`
+		TrafficPolicyVersion *int64  `yaml:"trafficPolicyVersion"`
+	}
+
 	Normal []struct {
 		Identifier           *string   `yaml:"identifier"`
 		Values               *[]string `yaml:"values"`
@@ -113,6 +125,22 @@ func (y *YAMLConfig) GetChecks() ([]checks.Check, error) {
 	return chks, nil
 }
 
+func (y *YAMLConfig) GetPolicyBasedFallbackRecord() (DNSRecord, error) {
+	return DNSRecord{
+		TrafficPolicyId:      y.PolicyBasedFallback.TrafficPolicyId,
+		TrafficPolicyVersion: y.PolicyBasedFallback.TrafficPolicyVersion,
+		TTL:                  y.PolicyBasedFallback.TTL,
+	}, nil
+}
+
+func (y *YAMLConfig) GetPolicyBasedNormalRecord() (DNSRecord, error) {
+	return DNSRecord{
+		TrafficPolicyId:      y.PolicyBasedNormal.TrafficPolicyId,
+		TrafficPolicyVersion: y.PolicyBasedNormal.TrafficPolicyVersion,
+		TTL:                  y.PolicyBasedNormal.TTL,
+	}, nil
+}
+
 func (y *YAMLConfig) GetFallbackRecords() ([]DNSRecord, error) {
 	var records []DNSRecord
 	for _, r := range y.Fallback {
@@ -184,13 +212,11 @@ func (y *YAMLConfig) GetLogger() *logrus.Logger {
 func NewYAMLConfig(yamlData []byte) (*YAMLConfig, error) {
 	var config YAMLConfig
 	err := yaml.Unmarshal(yamlData, &config)
-
 	level := logrus.InfoLevel
 	if config.Debug {
 		level = logrus.DebugLevel
 	}
 	config.Logger = NewLogger(level)
-
 	return &config, err
 }
 
