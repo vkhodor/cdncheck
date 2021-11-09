@@ -3,10 +3,12 @@ package cloudconfigs
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/sirupsen/logrus"
 	"github.com/vkhodor/cdncheck/pkg/config"
+	"time"
 )
 
 type CloudRoute53PolicyBased struct {
@@ -36,8 +38,10 @@ func (c *CloudRoute53PolicyBased) Normal() (bool, error) {
 		return false, err
 	}
 
+	var id *string
 	for _, p := range policyInstances.TrafficPolicyInstances {
 		if *p.TrafficPolicyId == *c.fallbackPolicyBased.TrafficPolicyId {
+			id = p.Id
 			deleteInput := &route53.DeleteTrafficPolicyInstanceInput{Id: p.Id}
 			deleteOutput, err := c.client.DeleteTrafficPolicyInstance(deleteInput)
 			c.logger.Debug(deleteOutput)
@@ -48,34 +52,143 @@ func (c *CloudRoute53PolicyBased) Normal() (bool, error) {
 		}
 	}
 
-	// если таки удаляли фолбэк то в цикле получаем Instance по Id до тех пор пока попытка получаения успешная.
-	// как только запись получить не удалось добавляем новую
+	if id != nil {
+		var t time.Duration = 0
+		policyRemoved := false
+		for t < 5*time.Minute {
+			time.Sleep(10 * time.Second)
+			t += 10 * time.Second
+			c.logger.Debug("Sleeping: ", t)
+			_, err := c.client.GetTrafficPolicyInstance(&route53.GetTrafficPolicyInstanceInput{Id: id})
+			if err != nil {
+				if aerr, ok := err.(awserr.Error); ok {
+					switch aerr.Code() {
+					case route53.ErrCodeNoSuchTrafficPolicyInstance:
+						policyRemoved = true
+					default:
+						c.logger.Error("GetTrafficPolicyInstance: ", err)
+						continue
+					}
+					if policyRemoved {
+						c.logger.Debug("Policy removed. Going next.")
+						break
+					}
+
+				}
+			}
+			c.logger.Debug("Found relevant policy instance. Continue")
+			continue
+		}
+		if t >= 5*time.Minute {
+			c.logger.Error("Timeout for policy removing.")
+			return false, nil
+		}
+	}
 
 	input := &route53.CreateTrafficPolicyInstanceInput{
 		HostedZoneId:         aws.String(c.zoneId),
-		TrafficPolicyId:      aws.String("2d912bec-8e77-44de-8183-070f5227b302"),
-		TrafficPolicyVersion: aws.Int64(1),
-		Name:                 aws.String("test.algorithmic.bid."),
-		TTL:                  aws.Int64(60),
+		TrafficPolicyId:      c.normalPolicyBased.TrafficPolicyId,
+		TrafficPolicyVersion: c.normalPolicyBased.TrafficPolicyVersion,
+		Name:                 aws.String(c.recordName),
+		TTL:                  aws.Int64(int64(*c.normalPolicyBased.TTL)),
 	}
 	result, err := c.client.CreateTrafficPolicyInstance(input)
 	c.logger.Debug(result)
 	if err != nil {
 		return false, err
+	}
+
+	var t time.Duration = 0
+	for t < 5*time.Minute {
+		time.Sleep(10 * time.Second)
+		t += 10 * time.Second
+		c.logger.Debug("Sleeping: ", t)
+		state, _ := c.State()
+		if state == "normal:Applied" {
+			c.logger.Debug("done")
+			break
+		}
+		c.logger.Debug("Policy is not applied yet. ", state)
 	}
 	return true, nil
 }
 
 func (c *CloudRoute53PolicyBased) Fallback() (bool, error) {
+	policyInstances, err := c.ListPolicyInstances()
+	if err != nil {
+		return false, err
+	}
+
+	var id *string
+	for _, p := range policyInstances.TrafficPolicyInstances {
+		if *p.TrafficPolicyId == *c.normalPolicyBased.TrafficPolicyId {
+			id = p.Id
+			deleteInput := &route53.DeleteTrafficPolicyInstanceInput{Id: p.Id}
+			deleteOutput, err := c.client.DeleteTrafficPolicyInstance(deleteInput)
+			c.logger.Debug(deleteOutput)
+			if err != nil {
+				return false, err
+			}
+			break
+		}
+	}
+
+	if id != nil {
+		var t time.Duration = 0
+		policyRemoved := false
+		for t < 5*time.Minute {
+			time.Sleep(10 * time.Second)
+			t += 10 * time.Second
+			c.logger.Debug("Sleeping: ", t)
+			_, err := c.client.GetTrafficPolicyInstance(&route53.GetTrafficPolicyInstanceInput{Id: id})
+			if err != nil {
+				if aerr, ok := err.(awserr.Error); ok {
+					switch aerr.Code() {
+					case route53.ErrCodeNoSuchTrafficPolicyInstance:
+						policyRemoved = true
+					default:
+						c.logger.Error("GetTrafficPolicyInstance: ", err)
+						continue
+					}
+					if policyRemoved {
+						c.logger.Debug("Policy removed. Going next.")
+						break
+					}
+				}
+			}
+			c.logger.Debug("Found relevant policy instance. Continue")
+			continue
+		}
+		if t >= 5*time.Minute {
+			c.logger.Error("Timeout for policy removing.")
+			return false, nil
+		}
+	}
+
 	input := &route53.CreateTrafficPolicyInstanceInput{
 		HostedZoneId:         aws.String(c.zoneId),
-		TrafficPolicyId:      aws.String("ca7be789-cd5f-45af-9e86-310091df7f93"),
-		TrafficPolicyVersion: aws.Int64(1),
+		TrafficPolicyId:      c.fallbackPolicyBased.TrafficPolicyId,
+		TrafficPolicyVersion: c.fallbackPolicyBased.TrafficPolicyVersion,
+		Name:                 aws.String(c.recordName),
+		TTL:                  aws.Int64(int64(*c.fallbackPolicyBased.TTL)),
 	}
 	result, err := c.client.CreateTrafficPolicyInstance(input)
 	c.logger.Debug(result)
 	if err != nil {
 		return false, err
+	}
+
+	var t time.Duration = 0
+	for t < 5*time.Minute {
+		time.Sleep(10 * time.Second)
+		t += 10 * time.Second
+		c.logger.Debug("Sleeping: ", t)
+		state, _ := c.State()
+		if state == "fallback:Applied" {
+			c.logger.Debug("done")
+			break
+		}
+		c.logger.Debug("Policy is not applied yet. ", state)
 	}
 	return true, nil
 }
