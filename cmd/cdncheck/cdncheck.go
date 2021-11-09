@@ -41,6 +41,8 @@ func main() {
 			conf.Route53.ZoneId,
 			*conf.Route53.RecordName,
 			logger,
+			conf.FallbackPrefix,
+			conf.NormalPrefix,
 		)
 	}
 

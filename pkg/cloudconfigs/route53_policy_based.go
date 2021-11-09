@@ -18,16 +18,20 @@ type CloudRoute53PolicyBased struct {
 	logger              *logrus.Logger
 	normalPolicyBased   *config.DNSRecord
 	fallbackPolicyBased *config.DNSRecord
+	fallbackPrefix      *string
+	normalPrefix        *string
 }
 
-func NewCloudRoute53PolicyBased(zoneId string, recordName string, logger *logrus.Logger) *CloudRoute53PolicyBased {
+func NewCloudRoute53PolicyBased(zoneId string, recordName string, logger *logrus.Logger, fallbackPrefix *string, normalPrefix *string) *CloudRoute53PolicyBased {
 	mySession := session.Must(session.NewSession())
 	svc := route53.New(mySession)
 	ret := CloudRoute53PolicyBased{
-		client:     svc,
-		zoneId:     zoneId,
-		recordName: recordName,
-		logger:     logger,
+		client:         svc,
+		zoneId:         zoneId,
+		recordName:     recordName,
+		logger:         logger,
+		fallbackPrefix: fallbackPrefix,
+		normalPrefix:   normalPrefix,
 	}
 	return &ret
 }
@@ -208,10 +212,10 @@ func (c *CloudRoute53PolicyBased) State() (string, error) {
 
 	for _, p := range output.TrafficPolicyInstances {
 		if *p.TrafficPolicyId == *c.normalPolicyBased.TrafficPolicyId && *p.TrafficPolicyVersion == *c.normalPolicyBased.TrafficPolicyVersion {
-			return fmt.Sprintf("normal:%v", *p.State), nil
+			return fmt.Sprintf("%v:%v", *c.normalPrefix, *p.State), nil
 		}
 		if *p.TrafficPolicyId == *c.fallbackPolicyBased.TrafficPolicyId && *p.TrafficPolicyVersion == *c.fallbackPolicyBased.TrafficPolicyVersion {
-			return fmt.Sprintf("fallback:%v", *p.State), nil
+			return fmt.Sprintf("%v:%v", *c.fallbackPrefix, *p.State), nil
 		}
 	}
 
