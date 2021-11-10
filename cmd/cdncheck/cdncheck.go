@@ -6,6 +6,8 @@ import (
 	"github.com/vkhodor/cdncheck/pkg/senders"
 	"github.com/vkhodor/cdncheck/pkg/servers"
 	"os"
+	"strings"
+
 	//	"github.com/vkhodor/cdncheck/pkg/checks"
 	"github.com/vkhodor/cdncheck/pkg/cloudconfigs"
 )
@@ -36,7 +38,7 @@ func main() {
 		logger,
 	)
 
-	if true {
+	if conf.PolicyBasedNormal.TrafficPolicyId != nil {
 		r53client = cloudconfigs.NewCloudRoute53PolicyBased(
 			conf.Route53.ZoneId,
 			*conf.Route53.RecordName,
@@ -64,7 +66,7 @@ func main() {
 	}
 
 	if cliFlags.SetFallback {
-		if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
+		if strings.Contains(currentState, *conf.FallbackPrefix) && !cliFlags.Check && !cliFlags.Force {
 			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 			os.Exit(0)
 		}
@@ -78,7 +80,7 @@ func main() {
 	}
 
 	if cliFlags.SetNormal {
-		if currentState == *conf.NormalPrefix && !cliFlags.Force {
+		if strings.Contains(currentState, *conf.NormalPrefix) && !cliFlags.Force {
 			logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.NormalPrefix))
 			os.Exit(0)
 		}
@@ -91,7 +93,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if currentState == *conf.FallbackPrefix && !cliFlags.Check && !cliFlags.Force {
+	if strings.Contains(currentState, *conf.FallbackPrefix) && !cliFlags.Check && !cliFlags.Force {
 		logger.Info(fmt.Sprintf("Current CDN state is already %v. Do nothing", *conf.FallbackPrefix))
 		logger.Debug(conf.Slack.AlwaysFallbackSend)
 		if conf.Slack.AlwaysFallbackSend {
@@ -126,7 +128,7 @@ func main() {
 				fmt.Println("result: ", ok)
 				break
 			}
-			if currentState != *conf.FallbackPrefix {
+			if !strings.Contains(currentState, *conf.FallbackPrefix) {
 				_ = sender.Send(fmt.Sprintf("[%v] CDN check returned error. Going to Fallback...", *conf.Route53.RecordName))
 				ok, err = r53client.Fallback()
 				if !ok {
@@ -140,7 +142,7 @@ func main() {
 		}
 	}
 
-	if checksResult && currentState == *conf.FallbackPrefix && !cliFlags.Check && conf.AutoBack {
+	if checksResult && strings.Contains(currentState, *conf.FallbackPrefix) && !cliFlags.Check && conf.AutoBack {
 		_, err = r53client.Normal()
 		if err != nil {
 			logger.Fatalln(fmt.Sprintf("Can't set cloud configuration to %v state: ", *conf.NormalPrefix), err)

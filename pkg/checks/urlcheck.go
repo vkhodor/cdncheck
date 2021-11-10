@@ -41,7 +41,9 @@ func (h *URLCheck) Check(host string) (bool, error) {
 
 		resp, err := client.Get(url)
 		if err != nil {
+			h.Logger.Debug("URLCheck: ", err)
 			fails += 1
+			continue
 		}
 
 		h.Logger.Debug("URLCheck: ", resp.StatusCode)
